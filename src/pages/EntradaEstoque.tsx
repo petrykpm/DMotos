@@ -4,6 +4,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { pecaService } from '@/services/api';
 import { toast } from 'sonner';
 
+const categorias = ['Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros'];
+
 export default function EntradaEstoque() {
   const navigate = useNavigate();
   const [nome, setNome] = useState('');
@@ -28,7 +30,7 @@ export default function EntradaEstoque() {
         nome: trimNome,
         modelo: modelo.trim() || undefined,
         compatibilidade: compat.trim() || undefined,
-        categoria: categoria.trim() || undefined,
+        categoria: categoria || undefined,
         quantidade: qtd,
         preco: parseFloat(preco) || 0,
         estoque_minimo: parseInt(estoqueMinimo) || 5,
@@ -43,56 +45,62 @@ export default function EntradaEstoque() {
     }
   };
 
+  const inputClass = "w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
+  const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
+
   return (
     <div className="pb-20 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
-        <h1 className="font-display text-lg font-bold text-foreground">Nova Peça / Entrada</h1>
+        <h1 className="font-display text-lg font-bold text-foreground">Nova Peça</h1>
       </div>
       <form onSubmit={handleSubmit} className="px-4 space-y-4">
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Nome da Peça *</label>
-          <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome da peça"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Nome da Peça *</label>
+          <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Pastilha de Freio Dianteira" className={inputClass} />
         </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Modelo</label>
-            <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="Modelo"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className={labelClass}>Categoria</label>
+            <select value={categoria} onChange={e => setCategoria(e.target.value)}
+              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="">Selecionar...</option>
+              {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Categoria</label>
-            <input value={categoria} onChange={e => setCategoria(e.target.value)} placeholder="Ex: Freio"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className={labelClass}>Modelo</label>
+            <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="Ex: ESD-123" className={inputClass} />
           </div>
         </div>
+
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Compatibilidade</label>
-          <input value={compat} onChange={e => setCompat(e.target.value)} placeholder="Ex: Honda CG 160"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Compatibilidade</label>
+          <input value={compat} onChange={e => setCompat(e.target.value)} placeholder="Ex: Honda CG 160, Titan 150" className={inputClass} />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Quantidade *</label>
-            <input value={quantidade} onChange={e => setQuantidade(e.target.value)} placeholder="0" type="number" min="1"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className={labelClass}>Quantidade *</label>
+            <input value={quantidade} onChange={e => setQuantidade(e.target.value)} placeholder="0" type="number" min="1" className={inputClass} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Preço Unit.</label>
-            <input value={preco} onChange={e => setPreco(e.target.value)} placeholder="0.00" type="number" step="0.01" min="0"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Est. Mín.</label>
-            <input value={estoqueMinimo} onChange={e => setEstoqueMinimo(e.target.value)} placeholder="5" type="number" min="0"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className={labelClass}>Preço de Venda (R$)</label>
+            <input value={preco} onChange={e => setPreco(e.target.value)} placeholder="0,00" type="number" step="0.01" min="0" className={inputClass} />
           </div>
         </div>
+
+        <div>
+          <label className={labelClass}>Estoque Mínimo</label>
+          <input value={estoqueMinimo} onChange={e => setEstoqueMinimo(e.target.value)} placeholder="5" type="number" min="0" className={inputClass} />
+          <p className="text-xs text-muted-foreground mt-1">Alerta quando estoque atingir esse valor</p>
+        </div>
+
         <button type="submit" disabled={saving}
           className="w-full h-12 bg-gradient-red text-primary-foreground font-bold rounded-lg shadow-red transition-all active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2">
           {saving && <Loader2 size={18} className="animate-spin" />}
-          {saving ? 'Registrando...' : 'Cadastrar Peça'}
+          {saving ? 'Cadastrando...' : 'Cadastrar Peça'}
         </button>
       </form>
     </div>
