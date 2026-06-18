@@ -1,12 +1,63 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, Bike, FileText, Pencil, Trash2, X, Save, Plus } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, Bike, FileText, Pencil, Trash2, X, Save, Plus, AlertTriangle, Loader2 } from 'lucide-react';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { clienteService, motoService, ordemService } from '@/services/api';
+import { clienteService, motoService, ordemService, vinculoService } from '@/services/api';
 import { toast } from 'sonner';
+
+function DeleteModal({ title, descricao, os, onClose, onConfirm, loading }: {
+  title: string; descricao: string; os: any[]; onClose: () => void; onConfirm: () => void; loading: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle size={18} className="text-destructive" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-foreground">{title}</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{descricao}</p>
+          </div>
+        </div>
+
+        {os.length > 0 && (
+          <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
+            {os.map((o: any, i: number) => (
+              <div key={i} className="flex items-center justify-between p-2.5 bg-secondary rounded-lg">
+                <p className="text-xs font-bold text-primary font-mono">{o.numero}</p>
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                  o.status === 'finalizada' ? 'bg-success/15 text-success' :
+                  o.status === 'aberta' ? 'bg-info/15 text-info' : 'bg-warning/15 text-warning'
+                }`}>{o.status.replace('_', ' ')}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {os.length > 0 && (
+          <p className="text-xs text-muted-foreground mb-4 p-3 bg-destructive/5 border border-destructive/15 rounded-lg">
+            Todas as ordens de serviço vinculadas também serão excluídas permanentemente.
+          </p>
+        )}
+
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 h-11 bg-secondary text-foreground font-medium rounded-xl active:scale-[0.97] transition-transform">
+            Cancelar
+          </button>
+          <button onClick={onConfirm} disabled={loading}
+            className="flex-1 h-11 bg-destructive text-white font-bold rounded-xl active:scale-[0.97] transition-transform disabled:opacity-50 flex items-center justify-center gap-2">
+            {loading ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+            {loading ? 'Excluindo...' : 'Excluir'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ClienteDetalhe() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +86,11 @@ export default function ClienteDetalhe() {
   const [motoPlaca, setMotoPlaca] = useState('');
   const [motoKm, setMotoKm] = useState('');
   const [motoObs, setMotoObs] = useState('');
+
+  // Delete modals
+  const [deleteClienteModal, setDeleteClienteModal] = useState<{ os: any[] } | null>(null);
+  const [deleteMotoModal, setDeleteMotoModal] = useState<{ moto: any; os: any[] } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadData = async () => {
     if (!id) return;
@@ -69,19 +125,23 @@ export default function ClienteDetalhe() {
     finally { setSaving(false); }
   };
 
-  const handleDeleteCliente = async () => {
-    if (!confirm('Tem certeza que deseja excluir este cliente? Todas as motos vinculadas também serão excluídas.')) return;
+  const handleDeleteClienteClick = async () => {
+    const os = await vinculoService.osDeCliente(id!);
+    setDeleteClienteModal({ os });
+  };
+
+  const handleDeleteClienteConfirm = async () => {
+    setDeleting(true);
     try {
-      await clienteService.deletar(id!);
-      toast.success('Cliente excluído!'); navigate('/clientes');
-    } catch (err: any) {
-      const msg = err.message || '';
-      if (msg.includes('foreign key') || msg.includes('fkey')) {
-        toast.error('Não é possível excluir — há ordens de serviço vinculadas.');
+      if (deleteClienteModal!.os.length > 0) {
+        await vinculoService.deletarClienteForce(id!);
       } else {
-        toast.error('Erro ao excluir.');
+        await clienteService.deletar(id!);
       }
-    }
+      toast.success('Cliente excluído!');
+      navigate('/clientes');
+    } catch (err: any) { toast.error(err.message || 'Erro ao excluir'); }
+    finally { setDeleting(false); setDeleteClienteModal(null); }
   };
 
   const openEditMoto = (m: any) => {
@@ -99,17 +159,23 @@ export default function ClienteDetalhe() {
     finally { setSaving(false); }
   };
 
-  const handleDeleteMoto = async (motoId: string) => {
-    if (!confirm('Excluir esta moto?')) return;
-    try { await motoService.deletar(motoId); toast.success('Moto excluída!'); loadData(); }
-    catch (err: any) {
-      const msg = err.message || '';
-      if (msg.includes('foreign key') || msg.includes('fkey')) {
-        toast.error('Não é possível excluir — há ordens de serviço vinculadas.');
+  const handleDeleteMotoClick = async (m: any) => {
+    const os = await vinculoService.osDeMoto(m.id);
+    setDeleteMotoModal({ moto: m, os });
+  };
+
+  const handleDeleteMotoConfirm = async () => {
+    if (!deleteMotoModal) return;
+    setDeleting(true);
+    try {
+      if (deleteMotoModal.os.length > 0) {
+        await vinculoService.deletarMotoForce(deleteMotoModal.moto.id);
       } else {
-        toast.error('Erro ao excluir.');
+        await motoService.deletar(deleteMotoModal.moto.id);
       }
-    }
+      toast.success('Moto excluída!'); setDeleteMotoModal(null); loadData();
+    } catch (err: any) { toast.error(err.message || 'Erro ao excluir'); }
+    finally { setDeleting(false); }
   };
 
   if (loading) return <LoadingState />;
@@ -122,13 +188,15 @@ export default function ClienteDetalhe() {
     </div>
   );
 
+  const inputClass = "w-full h-11 px-4 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all";
+
   return (
     <div className="pb-24 lg:pb-8 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
         <h1 className="font-display text-lg font-bold text-foreground flex-1">Detalhes do Cliente</h1>
         <button onClick={openEditCliente} className="p-2 rounded-lg bg-primary/10 text-primary"><Pencil size={16} /></button>
-        <button onClick={handleDeleteCliente} className="p-2 rounded-lg bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
+        <button onClick={handleDeleteClienteClick} className="p-2 rounded-lg bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
       </div>
 
       <div className="mx-4 p-4 bg-card rounded-lg border border-border shadow-card mb-4">
@@ -163,7 +231,7 @@ export default function ClienteDetalhe() {
                   <p className="text-xs text-muted-foreground">{m.placa || '-'} • {m.cor || '-'}{m.km ? ` • ${m.km.toLocaleString('pt-BR')} km` : ''}</p>
                 </div>
                 <button onClick={() => openEditMoto(m)} className="p-1.5 text-muted-foreground"><Pencil size={14} /></button>
-                <button onClick={() => handleDeleteMoto(m.id)} className="p-1.5 text-destructive"><Trash2 size={14} /></button>
+                <button onClick={() => handleDeleteMotoClick(m)} className="p-1.5 text-destructive"><Trash2 size={14} /></button>
               </div>
             ))}
           </div>
@@ -194,18 +262,18 @@ export default function ClienteDetalhe() {
       {/* Modal Editar Cliente */}
       {editOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-card rounded-xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-foreground">Editar Cliente</h2>
               <button onClick={() => setEditOpen(false)} className="p-1 text-muted-foreground"><X size={18} /></button>
             </div>
             <div className="space-y-3">
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Nome *</label><input value={editNome} onChange={e => setEditNome(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Telefone *</label><input value={editTel} onChange={e => setEditTel(e.target.value)} type="tel" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">E-mail</label><input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Endereço</label><input value={editEndereco} onChange={e => setEditEndereco(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label><textarea value={editObs} onChange={e => setEditObs(e.target.value)} rows={2} className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" /></div>
-              <button onClick={handleSaveCliente} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Nome *</label><input value={editNome} onChange={e => setEditNome(e.target.value)} className={inputClass} /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Telefone *</label><input value={editTel} onChange={e => setEditTel(e.target.value)} type="tel" className={inputClass} /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">E-mail</label><input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email" className={inputClass} /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Endereço</label><input value={editEndereco} onChange={e => setEditEndereco(e.target.value)} className={inputClass} /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label><textarea value={editObs} onChange={e => setEditObs(e.target.value)} rows={2} className="w-full px-4 py-2 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" /></div>
+              <button onClick={handleSaveCliente} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-xl active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
           </div>
         </div>
@@ -214,24 +282,55 @@ export default function ClienteDetalhe() {
       {/* Modal Editar Moto */}
       {editMoto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-card rounded-xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-foreground">Editar Moto</h2>
               <button onClick={() => setEditMoto(null)} className="p-1 text-muted-foreground"><X size={18} /></button>
             </div>
             <div className="space-y-3">
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Marca *</label><input value={motoMarca} onChange={e => setMotoMarca(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Modelo *</label><input value={motoModelo} onChange={e => setMotoModelo(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Marca *</label><input value={motoMarca} onChange={e => setMotoMarca(e.target.value)} className={inputClass} /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Modelo *</label><input value={motoModelo} onChange={e => setMotoModelo(e.target.value)} className={inputClass} /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Ano</label><input value={motoAno} onChange={e => setMotoAno(e.target.value)} type="number" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Cor</label><input value={motoCor} onChange={e => setMotoCor(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Ano</label><input value={motoAno} onChange={e => setMotoAno(e.target.value)} type="number" className={inputClass} /></div>
+                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Cor</label><input value={motoCor} onChange={e => setMotoCor(e.target.value)} className={inputClass} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-medium text-muted-foreground mb-1 block">Placa</label><input value={motoPlaca} onChange={e => setMotoPlaca(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div><div><label className="text-xs font-medium text-muted-foreground mb-1 block">KM Atual</label><input value={motoKm} onChange={e => setMotoKm(e.target.value)} type="number" min="0" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div></div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label><textarea value={motoObs} onChange={e => setMotoObs(e.target.value)} rows={2} className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" /></div>
-              <button onClick={handleSaveMoto} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Placa</label><input value={motoPlaca} onChange={e => setMotoPlaca(e.target.value)} className={inputClass} /></div>
+                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">KM Atual</label><input value={motoKm} onChange={e => setMotoKm(e.target.value)} type="number" min="0" className={inputClass} /></div>
+              </div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label><textarea value={motoObs} onChange={e => setMotoObs(e.target.value)} rows={2} className="w-full px-4 py-2 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" /></div>
+              <button onClick={handleSaveMoto} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-xl active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Delete Cliente */}
+      {deleteClienteModal && (
+        <DeleteModal
+          title="Excluir cliente?"
+          descricao={deleteClienteModal.os.length > 0
+            ? `${cliente.nome} possui ${deleteClienteModal.os.length} ordem(ns) de serviço vinculada(s):`
+            : `Tem certeza que deseja excluir ${cliente.nome}? Todas as motos também serão removidas.`}
+          os={deleteClienteModal.os}
+          onClose={() => setDeleteClienteModal(null)}
+          onConfirm={handleDeleteClienteConfirm}
+          loading={deleting}
+        />
+      )}
+
+      {/* Modal Delete Moto */}
+      {deleteMotoModal && (
+        <DeleteModal
+          title="Excluir moto?"
+          descricao={deleteMotoModal.os.length > 0
+            ? `${deleteMotoModal.moto.marca} ${deleteMotoModal.moto.modelo} possui ${deleteMotoModal.os.length} ordem(ns) de serviço vinculada(s):`
+            : `Excluir ${deleteMotoModal.moto.marca} ${deleteMotoModal.moto.modelo}?`}
+          os={deleteMotoModal.os}
+          onClose={() => setDeleteMotoModal(null)}
+          onConfirm={handleDeleteMotoConfirm}
+          loading={deleting}
+        />
       )}
     </div>
   );

@@ -239,3 +239,53 @@ export const configService = {
     return data;
   },
 };
+
+// ============================================================
+// HELPERS DE VÍNCULO PARA EXCLUSÃO
+// ============================================================
+export const vinculoService = {
+  async osDeCliente(clienteId: string) {
+    const { data, error } = await supabase
+      .from('ordens_servico')
+      .select('id, numero, status')
+      .eq('cliente_id', clienteId);
+    if (error) throwError(error, 'vinculoService.osDeCliente');
+    return data || [];
+  },
+  async osDeMoto(motoId: string) {
+    const { data, error } = await supabase
+      .from('ordens_servico')
+      .select('id, numero, status')
+      .eq('moto_id', motoId);
+    if (error) throwError(error, 'vinculoService.osDeMoto');
+    return data || [];
+  },
+  async deletarClienteForce(clienteId: string) {
+    // 1. Busca todas as OS do cliente
+    const { data: ordens } = await supabase.from('ordens_servico').select('id').eq('cliente_id', clienteId);
+    // 2. Remove itens de cada OS
+    for (const o of ordens || []) {
+      await supabase.from('ordem_itens').delete().eq('ordem_id', o.id);
+    }
+    // 3. Remove as OS
+    await supabase.from('ordens_servico').delete().eq('cliente_id', clienteId);
+    // 4. Remove motos
+    await supabase.from('motos').delete().eq('cliente_id', clienteId);
+    // 5. Remove cliente
+    const { error } = await supabase.from('clientes').delete().eq('id', clienteId);
+    if (error) throwError(error, 'vinculoService.deletarClienteForce');
+  },
+  async deletarMotoForce(motoId: string) {
+    // 1. Busca OS da moto
+    const { data: ordens } = await supabase.from('ordens_servico').select('id').eq('moto_id', motoId);
+    // 2. Remove itens de cada OS
+    for (const o of ordens || []) {
+      await supabase.from('ordem_itens').delete().eq('ordem_id', o.id);
+    }
+    // 3. Remove as OS
+    await supabase.from('ordens_servico').delete().eq('moto_id', motoId);
+    // 4. Remove moto
+    const { error } = await supabase.from('motos').delete().eq('id', motoId);
+    if (error) throwError(error, 'vinculoService.deletarMotoForce');
+  },
+};
