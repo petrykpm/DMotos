@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Save, AlertTriangle, Loader2 } from 'lucide-react';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -28,6 +28,11 @@ export default function Estoque() {
   const [ePreco, setEPreco] = useState('');
   const [eEstMin, setEEstMin] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Delete modal
+  const [deleteModal, setDeleteModal] = useState<{ peca: any; osVinculadas: any[] } | null>(null);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [deletingForce, setDeletingForce] = useState(false);
 
   const loadData = () => {
     pecaService.listar()
@@ -59,16 +64,39 @@ export default function Estoque() {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Excluir esta peça do estoque?')) return;
-    try { await pecaService.deletar(id); toast.success('Peça excluída!'); loadData(); }
-    catch (err: any) {
-      const msg = err.message || '';
-      if (msg.includes('foreign key') || msg.includes('fkey') || msg.includes('ordem_itens')) {
-        toast.error('Não é possível excluir — esta peça está vinculada a uma ordem de serviço.');
+  const handleDeleteClick = async (peca: any) => {
+    setLoadingDelete(true);
+    try {
+      const os = await pecaService.buscarOSVinculadas(peca.id);
+      if (os.length === 0) {
+        // Sem vínculos — exclui direto
+        if (!confirm('Excluir esta peça do estoque?')) { setLoadingDelete(false); return; }
+        await pecaService.deletar(peca.id);
+        toast.success('Peça excluída!');
+        loadData();
       } else {
-        toast.error('Erro ao excluir a peça.');
+        // Tem vínculos — abre modal
+        setDeleteModal({ peca, osVinculadas: os });
       }
+    } catch (err: any) {
+      toast.error('Erro ao verificar vínculos.');
+    } finally {
+      setLoadingDelete(false);
+    }
+  };
+
+  const handleDeleteForce = async () => {
+    if (!deleteModal) return;
+    setDeletingForce(true);
+    try {
+      await pecaService.deletarForce(deleteModal.peca.id);
+      toast.success('Peça excluída e removida das ordens vinculadas.');
+      setDeleteModal(null);
+      loadData();
+    } catch (err: any) {
+      toast.error('Erro ao excluir.');
+    } finally {
+      setDeletingForce(false);
     }
   };
 
@@ -112,7 +140,7 @@ export default function Estoque() {
                 <div className="flex items-center gap-1 ml-2">
                   <StatusBadge status={p.statusEstoque} />
                   <button onClick={() => openEdit(p)} className="p-1.5 text-muted-foreground hover:text-primary"><Pencil size={14} /></button>
-                  <button onClick={() => handleDelete(p.id)} className="p-1.5 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
+                  <button onClick={() => handleDeleteClick(p)} disabled={loadingDelete} className="p-1.5 text-muted-foreground hover:text-destructive disabled:opacity-40"><Trash2 size={14} /></button>
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -148,6 +176,60 @@ export default function Estoque() {
                 <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Est.Mín</label><input value={eEstMin} onChange={e => setEEstMin(e.target.value)} type="number" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               </div>
               <button onClick={handleSave} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Excluir Peça */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={18} className="text-destructive" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-foreground">Excluir peça?</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  <span className="font-semibold text-foreground">{deleteModal.peca.nome}</span> está vinculada a {deleteModal.osVinculadas.length} ordem{deleteModal.osVinculadas.length > 1 ? 's' : ''} de serviço:
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2 mb-5 max-h-40 overflow-y-auto">
+              {deleteModal.osVinculadas.map((os, i) => (
+                <div key={i} className="flex items-center justify-between p-2.5 bg-secondary rounded-lg">
+                  <div>
+                    <p className="text-xs font-bold text-primary font-mono">{os.numero}</p>
+                    <p className="text-xs text-muted-foreground">{os.clienteNome}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                      os.status === 'finalizada' ? 'bg-success/15 text-success' :
+                      os.status === 'aberta' ? 'bg-info/15 text-info' :
+                      'bg-warning/15 text-warning'
+                    }`}>{os.status.replace('_', ' ')}</span>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{os.quantidade} un. usadas</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-muted-foreground mb-4 p-3 bg-destructive/5 border border-destructive/15 rounded-lg">
+              Ao confirmar, a peça será removida dessas ordens e excluída permanentemente do estoque.
+            </p>
+
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteModal(null)}
+                className="flex-1 h-11 bg-secondary text-foreground font-medium rounded-xl active:scale-[0.97] transition-transform">
+                Cancelar
+              </button>
+              <button onClick={handleDeleteForce} disabled={deletingForce}
+                className="flex-1 h-11 bg-destructive text-white font-bold rounded-xl active:scale-[0.97] transition-transform disabled:opacity-50 flex items-center justify-center gap-2">
+                {deletingForce ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                {deletingForce ? 'Excluindo...' : 'Excluir mesmo assim'}
+              </button>
             </div>
           </div>
         </div>

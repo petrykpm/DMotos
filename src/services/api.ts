@@ -101,6 +101,27 @@ export const pecaService = {
     const { error } = await supabase.from('pecas').delete().eq('id', id);
     if (error) throwError(error, 'pecaService.deletar');
   },
+  async buscarOSVinculadas(pecaId: string) {
+    const { data, error } = await supabase
+      .from('ordem_itens')
+      .select('ordem_id, quantidade, ordens_servico(numero, status, clientes(nome))')
+      .eq('peca_id', pecaId);
+    if (error) throwError(error, 'pecaService.buscarOSVinculadas');
+    return (data || []).map((item: any) => ({
+      ordemId: item.ordem_id,
+      numero: item.ordens_servico?.numero || '',
+      status: item.ordens_servico?.status || '',
+      clienteNome: item.ordens_servico?.clientes?.nome || '',
+      quantidade: item.quantidade,
+    }));
+  },
+  async deletarForce(id: string) {
+    // Remove da ordem_itens primeiro, depois exclui a peça
+    const { error: itemErr } = await supabase.from('ordem_itens').delete().eq('peca_id', id);
+    if (itemErr) throwError(itemErr, 'pecaService.deletarForce.itens');
+    const { error } = await supabase.from('pecas').delete().eq('id', id);
+    if (error) throwError(error, 'pecaService.deletarForce');
+  },
   async entradaEstoque(pecaId: string, quantidade: number) {
     const { data: peca, error: fetchErr } = await supabase.from('pecas').select('quantidade').eq('id', pecaId).single();
     if (fetchErr) throwError(fetchErr, 'pecaService.entradaEstoque.fetch');
