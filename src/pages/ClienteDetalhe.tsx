@@ -33,6 +33,8 @@ export default function ClienteDetalhe() {
   const [motoAno, setMotoAno] = useState('');
   const [motoCor, setMotoCor] = useState('');
   const [motoPlaca, setMotoPlaca] = useState('');
+  const [motoKm, setMotoKm] = useState('');
+  const [motoObs, setMotoObs] = useState('');
 
   const loadData = async () => {
     if (!id) return;
@@ -77,14 +79,14 @@ export default function ClienteDetalhe() {
 
   const openEditMoto = (m: any) => {
     setEditMoto(m); setMotoMarca(m.marca); setMotoModelo(m.modelo);
-    setMotoAno(m.ano?.toString() || ''); setMotoCor(m.cor || ''); setMotoPlaca(m.placa || '');
+    setMotoAno(m.ano?.toString() || ''); setMotoCor(m.cor || ''); setMotoPlaca(m.placa || ''); setMotoKm(m.km?.toString() || ''); setMotoObs(m.observacoes || '');
   };
 
   const handleSaveMoto = async () => {
     if (!motoMarca.trim() || !motoModelo.trim()) { toast.error('Marca e modelo obrigatórios'); return; }
     setSaving(true);
     try {
-      await motoService.atualizar(editMoto.id, { marca: motoMarca.trim(), modelo: motoModelo.trim(), ano: motoAno ? parseInt(motoAno) : null, cor: motoCor.trim() || null, placa: motoPlaca.trim().toUpperCase() || null });
+      await motoService.atualizar(editMoto.id, { marca: motoMarca.trim(), modelo: motoModelo.trim(), ano: motoAno ? parseInt(motoAno) : null, cor: motoCor.trim() || null, placa: motoPlaca.trim().toUpperCase() || null, km: motoKm ? parseInt(motoKm) : null, observacoes: motoObs.trim() || null });
       setEditMoto(null); toast.success('Moto atualizada!'); loadData();
     } catch (err: any) { toast.error(err.message || 'Erro ao salvar'); }
     finally { setSaving(false); }
@@ -210,7 +212,8 @@ export default function ClienteDetalhe() {
                 <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Ano</label><input value={motoAno} onChange={e => setMotoAno(e.target.value)} type="number" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
                 <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Cor</label><input value={motoCor} onChange={e => setMotoCor(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               </div>
-              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Placa</label><input value={motoPlaca} onChange={e => setMotoPlaca(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+              <div className="grid grid-cols-2 gap-3"><div><label className="text-xs font-medium text-muted-foreground mb-1 block">Placa</label><input value={motoPlaca} onChange={e => setMotoPlaca(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div><div><label className="text-xs font-medium text-muted-foreground mb-1 block">KM Atual</label><input value={motoKm} onChange={e => setMotoKm(e.target.value)} type="number" min="0" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label><textarea value={motoObs} onChange={e => setMotoObs(e.target.value)} rows={2} className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" /></div>
               <button onClick={handleSaveMoto} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
           </div>

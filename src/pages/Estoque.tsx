@@ -76,7 +76,7 @@ export default function Estoque() {
     <div className="pb-20 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center justify-between">
         <h1 className="font-display text-xl font-bold text-foreground">Estoque</h1>
-        <button onClick={() => navigate('/estoque/entrada')} className="p-2.5 bg-primary rounded-lg text-primary-foreground active:scale-95 transition-transform"><Plus size={18} /></button>
+        <button onClick={() => navigate('/estoque/entrada')} className="flex items-center gap-1.5 px-3 py-2 bg-primary rounded-lg text-primary-foreground text-xs font-bold active:scale-95 transition-transform"><Plus size={15} /> Nova Peça</button>
       </div>
       <div className="px-4 mb-3"><SearchInput value={busca} onChange={setBusca} placeholder="Buscar peça, modelo, SKU..." /></div>
       <div className="px-4 mb-3 overflow-x-auto scrollbar-none">
@@ -132,7 +132,7 @@ export default function Estoque() {
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Nome *</label><input value={eNome} onChange={e => setENome(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Modelo</label><input value={eModelo} onChange={e => setEModelo(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Categoria</label><input value={eCategoria} onChange={e => setECategoria(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Categoria</label><select value={eCategoria} onChange={e => setECategoria(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"><option value="">Selecionar...</option>{categorias.filter(c => c !== 'Todas').map(c => <option key={c} value={c}>{c}</option>)}</select></div>
               </div>
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Compatibilidade</label><input value={eCompat} onChange={e => setECompat(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <div className="grid grid-cols-3 gap-3">
