@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Package, Bike, UserPlus, PlusCircle, ArrowDownToLine, AlertTriangle, ChevronRight, Wrench, TrendingUp } from 'lucide-react';
+import { Users, Package, Bike, UserPlus, PlusCircle, ArrowDownToLine, AlertTriangle, ChevronRight, Wrench } from 'lucide-react';
 import { LogoHeader } from '@/components/shared/LogoHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { LoadingState } from '@/components/shared/LoadingState';
@@ -31,7 +31,7 @@ export default function Home() {
       {/* Header */}
       <div className="px-4 pt-5 pb-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground font-medium">{saudacao}{primeiroNome ? `, ${primeiroNome}` : ''} 👋</p>
+          <p className="text-xs text-muted-foreground font-medium">{saudacao}{primeiroNome ? `, ${primeiroNome}` : ''}</p>
           <LogoHeader size="sm" showName />
         </div>
         <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm">
@@ -43,8 +43,8 @@ export default function Home() {
       <div className="px-4 grid grid-cols-3 gap-3 mb-6">
         <button onClick={() => navigate('/clientes')}
           className="bg-card border border-border rounded-2xl p-3.5 text-left active:scale-95 transition-transform shadow-card">
-          <div className="w-8 h-8 rounded-xl bg-info/15 flex items-center justify-center mb-2.5">
-            <Users size={16} className="text-info" />
+          <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center mb-2.5">
+            <Users size={16} className="text-muted-foreground" />
           </div>
           <p className="text-2xl font-bold text-foreground leading-none">{data.totalClientes}</p>
           <p className="text-[10px] text-muted-foreground mt-1">Clientes</p>
@@ -52,8 +52,8 @@ export default function Home() {
 
         <button onClick={() => navigate('/estoque')}
           className="bg-card border border-border rounded-2xl p-3.5 text-left active:scale-95 transition-transform shadow-card">
-          <div className="w-8 h-8 rounded-xl bg-warning/15 flex items-center justify-center mb-2.5">
-            <Package size={16} className="text-warning" />
+          <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center mb-2.5">
+            <Package size={16} className="text-muted-foreground" />
           </div>
           <p className="text-2xl font-bold text-foreground leading-none">{data.totalItensEstoque}</p>
           <p className="text-[10px] text-muted-foreground mt-1">Peças</p>
@@ -74,14 +74,14 @@ export default function Home() {
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Ações Rápidas</p>
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: <UserPlus size={18} />, label: 'Cliente', path: '/clientes/novo', color: 'text-info bg-info/10' },
-            { icon: <Bike size={18} />, label: 'Moto', path: '/motos/nova', color: 'text-success bg-success/10' },
-            { icon: <PlusCircle size={18} />, label: 'Nova OS', path: '/ordens/nova', color: 'text-primary bg-primary/10' },
-            { icon: <ArrowDownToLine size={18} />, label: 'Entrada', path: '/estoque/entrada', color: 'text-warning bg-warning/10' },
+            { icon: <UserPlus size={18} />, label: 'Cliente', path: '/clientes/novo' },
+            { icon: <Bike size={18} />, label: 'Moto', path: '/motos/nova' },
+            { icon: <PlusCircle size={18} />, label: 'Nova OS', path: '/ordens/nova' },
+            { icon: <ArrowDownToLine size={18} />, label: 'Entrada', path: '/estoque/entrada' },
           ].map(a => (
             <button key={a.path} onClick={() => navigate(a.path)}
               className="flex flex-col items-center gap-2 p-3 bg-card border border-border rounded-2xl active:scale-95 transition-transform shadow-card">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${a.color}`}>
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 {a.icon}
               </div>
               <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">{a.label}</span>
@@ -134,18 +134,13 @@ export default function Home() {
             {data.ordensRecentes.slice(0, 5).map(ordem => (
               <button key={ordem.id} onClick={() => navigate(`/ordens/${ordem.id}`)}
                 className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border active:scale-[0.98] transition-transform text-left shadow-card">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp size={15} className="text-primary" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-primary font-mono tracking-wider">{ordem.numero}</span>
+                    <StatusBadge status={ordem.status} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-xs font-bold text-primary font-mono">{ordem.numero}</span>
-                      <StatusBadge status={ordem.status} />
-                    </div>
-                    <p className="text-sm font-semibold text-foreground truncate">{ordem.clienteNome}</p>
-                    <p className="text-xs text-muted-foreground truncate">{ordem.motoDescricao}</p>
-                  </div>
+                  <p className="text-sm font-semibold text-foreground truncate">{ordem.clienteNome}</p>
+                  <p className="text-xs text-muted-foreground truncate">{ordem.motoDescricao}</p>
                 </div>
                 <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                   <span className="text-sm font-bold text-foreground">R$ {Number(ordem.valor_total).toFixed(2)}</span>
