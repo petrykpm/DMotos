@@ -178,7 +178,7 @@ export default function Configuracoes() {
           Sair do Sistema
         </button>
       </div>
-      <p className="text-center text-[10px] text-muted-foreground mt-6">DM Motos © 2026 • v2.0.0</p>
+      <p className="text-center text-[10px] text-muted-foreground mt-6">DM Motos © 2026 • v2.5.0</p>
 
       {/* ---- Modal: Editar Usuário ---- */}
       {editUser && (
