@@ -9,6 +9,7 @@ export default function NovoCliente() {
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
+  const [endereco, setEndereco] = useState('');
   const [observacoes, setObservacoes] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -23,6 +24,7 @@ export default function NovoCliente() {
         nome: trimNome,
         telefone: trimTel,
         email: email.trim() || undefined,
+        endereco: endereco.trim() || undefined,
         observacoes: observacoes.trim() || undefined,
       });
       toast.success('Cliente cadastrado!');
@@ -35,6 +37,9 @@ export default function NovoCliente() {
     }
   };
 
+  const inputClass = "w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
+  const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
+
   return (
     <div className="pb-20 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
@@ -43,22 +48,23 @@ export default function NovoCliente() {
       </div>
       <form onSubmit={handleSubmit} className="px-4 space-y-4">
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Nome *</label>
-          <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome do cliente"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Nome *</label>
+          <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome do cliente" className={inputClass} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Telefone *</label>
-          <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(00) 00000-0000" type="tel"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Telefone *</label>
+          <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(00) 00000-0000" type="tel" className={inputClass} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">E-mail</label>
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@exemplo.com" type="email"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>E-mail</label>
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@exemplo.com" type="email" className={inputClass} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Observações</label>
+          <label className={labelClass}>Endereço</label>
+          <input value={endereco} onChange={e => setEndereco(e.target.value)} placeholder="Rua, número, bairro" className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Observações</label>
           <textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Observações..." rows={3}
             className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
         </div>

@@ -17,6 +17,7 @@ export default function NovaOrdem() {
   const [selectedMoto, setSelectedMoto] = useState<any>(null);
   const [problema, setProblema] = useState('');
   const [servico, setServico] = useState('');
+  const [maoObra, setMaoObra] = useState('');
   const [selectedPecas, setSelectedPecas] = useState<{ peca: any; qtd: number }[]>([]);
   const [saving, setSaving] = useState(false);
   const [buscaCliente, setBuscaCliente] = useState('');
@@ -39,6 +40,10 @@ export default function NovaOrdem() {
     }
   }, [selectedCliente]);
 
+  const totalPecas = selectedPecas.reduce((t, sp) => t + Number(sp.peca.preco) * sp.qtd, 0);
+  const totalMaoObra = parseFloat(maoObra) || 0;
+  const totalGeral = totalPecas + totalMaoObra;
+
   const handleSubmit = async () => {
     if (!selectedCliente || !selectedMoto || !problema.trim()) {
       toast.error('Dados incompletos');
@@ -51,6 +56,7 @@ export default function NovaOrdem() {
         moto_id: selectedMoto.id,
         problema_relatado: problema.trim(),
         descricao_servico: servico.trim() || undefined,
+        valor_mao_obra: totalMaoObra,
         itens: selectedPecas.map(sp => ({
           peca_id: sp.peca.id,
           quantidade: sp.qtd,
@@ -75,6 +81,8 @@ export default function NovaOrdem() {
     { key: 'resumo', label: 'Resumo' },
   ];
   const currentIdx = steps.findIndex(s => s.key === step);
+
+  const inputClass = "w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
 
   return (
     <div className="pb-20 animate-fade-in">
@@ -112,6 +120,9 @@ export default function NovaOrdem() {
                 <ChevronRight size={16} className="text-muted-foreground" />
               </button>
             ))}
+            {clientes.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-8">Nenhum cliente cadastrado</p>
+            )}
           </div>
         </div>
       )}
@@ -160,6 +171,10 @@ export default function NovaOrdem() {
             <textarea value={servico} onChange={e => setServico(e.target.value)} rows={3} placeholder="Descreva o serviço a ser realizado..."
               className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
           </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Mão de Obra (R$)</label>
+            <input value={maoObra} onChange={e => setMaoObra(e.target.value)} placeholder="0,00" type="number" min="0" step="0.01" className={inputClass} />
+          </div>
           <button onClick={() => setStep('pecas')} disabled={!problema.trim()}
             className="w-full h-12 bg-gradient-red text-primary-foreground font-bold rounded-lg shadow-red disabled:opacity-50 active:scale-[0.97] transition-transform">
             Próximo
@@ -189,6 +204,9 @@ export default function NovaOrdem() {
                 </button>
               );
             })}
+            {pecas.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-8">Nenhuma peça no estoque</p>
+            )}
           </div>
           <button onClick={() => setStep('resumo')}
             className="w-full h-12 bg-gradient-red text-primary-foreground font-bold rounded-lg shadow-red active:scale-[0.97] transition-transform">
@@ -216,7 +234,7 @@ export default function NovaOrdem() {
               )}
               {selectedPecas.length > 0 && (
                 <div className="border-t border-border pt-2 mt-2">
-                  <p className="text-muted-foreground text-xs mb-1">Peças:</p>
+                  <p className="text-muted-foreground text-xs mb-2">Peças:</p>
                   {selectedPecas.map(sp => (
                     <div key={sp.peca.id} className="flex justify-between">
                       <span className="text-foreground">{sp.peca.nome}</span>
@@ -225,9 +243,19 @@ export default function NovaOrdem() {
                   ))}
                 </div>
               )}
-              <div className="border-t border-border pt-2 mt-2 flex justify-between">
-                <span className="font-bold text-foreground">Total Peças</span>
-                <span className="font-bold text-primary">R$ {selectedPecas.reduce((t, sp) => t + Number(sp.peca.preco) * sp.qtd, 0).toFixed(2)}</span>
+              <div className="border-t border-border pt-2 mt-2 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Peças</span>
+                  <span className="text-foreground">R$ {totalPecas.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Mão de Obra</span>
+                  <span className="text-foreground">R$ {totalMaoObra.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-base pt-1 border-t border-border">
+                  <span className="text-foreground">Total</span>
+                  <span className="text-primary">R$ {totalGeral.toFixed(2)}</span>
+                </div>
               </div>
             </div>
           </div>

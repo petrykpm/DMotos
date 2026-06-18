@@ -15,6 +15,8 @@ export default function NovaMoto() {
   const [ano, setAno] = useState('');
   const [placa, setPlaca] = useState('');
   const [cor, setCor] = useState('');
+  const [km, setKm] = useState('');
+  const [observacoes, setObservacoes] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function NovaMoto() {
         ano: ano ? parseInt(ano) : undefined,
         cor: cor.trim() || undefined,
         placa: placa.trim().toUpperCase() || undefined,
+        km: km ? parseInt(km) : undefined,
       });
       toast.success('Moto cadastrada!');
       navigate(-1);
@@ -48,6 +51,9 @@ export default function NovaMoto() {
     }
   };
 
+  const inputClass = "w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
+  const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
+
   return (
     <div className="pb-20 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
@@ -56,7 +62,7 @@ export default function NovaMoto() {
       </div>
       <form onSubmit={handleSubmit} className="px-4 space-y-4">
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Cliente *</label>
+          <label className={labelClass}>Cliente *</label>
           <select value={clienteId} onChange={e => setClienteId(e.target.value)}
             className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
             <option value="">Selecione um cliente</option>
@@ -64,31 +70,37 @@ export default function NovaMoto() {
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Marca *</label>
-          <input value={marca} onChange={e => setMarca(e.target.value)} placeholder="Ex: Honda"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Marca *</label>
+          <input value={marca} onChange={e => setMarca(e.target.value)} placeholder="Ex: Honda" className={inputClass} />
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Modelo *</label>
-          <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="Ex: CG 160 Titan"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Modelo *</label>
+          <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="Ex: CG 160 Titan" className={inputClass} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ano</label>
-            <input value={ano} onChange={e => setAno(e.target.value)} placeholder="2024" type="number" min="1900" max="2099"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className={labelClass}>Ano</label>
+            <input value={ano} onChange={e => setAno(e.target.value)} placeholder="2024" type="number" min="1900" max="2099" className={inputClass} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Cor</label>
-            <input value={cor} onChange={e => setCor(e.target.value)} placeholder="Preta"
-              className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <label className={labelClass}>Cor</label>
+            <input value={cor} onChange={e => setCor(e.target.value)} placeholder="Preta" className={inputClass} />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Placa</label>
+            <input value={placa} onChange={e => setPlaca(e.target.value)} placeholder="ABC-1234" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>KM Atual</label>
+            <input value={km} onChange={e => setKm(e.target.value)} placeholder="Ex: 15000" type="number" min="0" className={inputClass} />
           </div>
         </div>
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Placa</label>
-          <input value={placa} onChange={e => setPlaca(e.target.value)} placeholder="ABC-1234"
-            className="w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <label className={labelClass}>Observações</label>
+          <textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Observações sobre a moto..." rows={3}
+            className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" />
         </div>
         <button type="submit" disabled={saving}
           className="w-full h-12 bg-gradient-red text-primary-foreground font-bold rounded-lg shadow-red transition-all active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2">
