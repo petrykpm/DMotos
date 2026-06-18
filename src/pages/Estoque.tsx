@@ -8,7 +8,7 @@ import { LoadingState } from '@/components/shared/LoadingState';
 import { pecaService } from '@/services/api';
 import { toast } from 'sonner';
 
-const categorias = ['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica'];
+const categorias = ['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros'];
 
 export default function Estoque() {
   const navigate = useNavigate();

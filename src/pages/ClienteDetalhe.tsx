@@ -23,6 +23,7 @@ export default function ClienteDetalhe() {
   const [editTel, setEditTel] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editObs, setEditObs] = useState('');
+  const [editEndereco, setEditEndereco] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Edit moto modal
@@ -52,7 +53,7 @@ export default function ClienteDetalhe() {
 
   const openEditCliente = () => {
     setEditNome(cliente.nome); setEditTel(cliente.telefone);
-    setEditEmail(cliente.email || ''); setEditObs(cliente.observacoes || '');
+    setEditEmail(cliente.email || ''); setEditObs(cliente.observacoes || ''); setEditEndereco(cliente.endereco || '');
     setEditOpen(true);
   };
 
@@ -60,7 +61,7 @@ export default function ClienteDetalhe() {
     if (!editNome.trim() || !editTel.trim()) { toast.error('Nome e telefone obrigatórios'); return; }
     setSaving(true);
     try {
-      const updated = await clienteService.atualizar(id!, { nome: editNome.trim(), telefone: editTel.trim(), email: editEmail.trim() || null, observacoes: editObs.trim() || null });
+      const updated = await clienteService.atualizar(id!, { nome: editNome.trim(), telefone: editTel.trim(), email: editEmail.trim() || null, endereco: editEndereco.trim() || null, observacoes: editObs.trim() || null });
       setCliente(updated); setEditOpen(false); toast.success('Cliente atualizado!');
     } catch (err: any) { toast.error(err.message || 'Erro ao salvar'); }
     finally { setSaving(false); }
@@ -125,7 +126,8 @@ export default function ClienteDetalhe() {
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-foreground"><Phone size={14} className="text-primary" /><span>{cliente.telefone}</span></div>
           {cliente.email && <div className="flex items-center gap-2 text-sm text-foreground"><Mail size={14} className="text-primary" /><span>{cliente.email}</span></div>}
-          {cliente.observacoes && <p className="text-xs text-muted-foreground mt-2">{cliente.observacoes}</p>}
+          {cliente.endereco && <div className="flex items-center gap-2 text-sm text-foreground"><span className="text-primary text-xs">📍</span><span>{cliente.endereco}</span></div>}
+          {cliente.observacoes && <p className="text-xs text-muted-foreground mt-2 italic">{cliente.observacoes}</p>}
         </div>
       </div>
 
@@ -185,6 +187,7 @@ export default function ClienteDetalhe() {
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Nome *</label><input value={editNome} onChange={e => setEditNome(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Telefone *</label><input value={editTel} onChange={e => setEditTel(e.target.value)} type="tel" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">E-mail</label><input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+              <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Endereço</label><input value={editEndereco} onChange={e => setEditEndereco(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label><textarea value={editObs} onChange={e => setEditObs(e.target.value)} rows={2} className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" /></div>
               <button onClick={handleSaveCliente} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
