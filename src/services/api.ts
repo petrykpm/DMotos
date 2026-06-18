@@ -122,6 +122,14 @@ export const ordemService = {
       motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
     }));
   },
+  async listarPorCliente(clienteId: string) {
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').eq('cliente_id', clienteId).order('created_at', { ascending: false });
+    if (error) throwError(error, 'ordemService.listarPorCliente');
+    return (data || []).map((o: any) => ({
+      ...o, clienteNome: o.clientes?.nome || '',
+      motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
+    }));
+  },
   async buscar(id: string) {
     const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano), ordem_itens(*, pecas(nome))').eq('id', id).single();
     if (error) throwError(error, 'ordemService.buscar');

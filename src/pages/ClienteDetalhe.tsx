@@ -42,9 +42,9 @@ export default function ClienteDetalhe() {
       const [c, m, o] = await Promise.all([
         clienteService.buscar(id),
         motoService.listarPorCliente(id),
-        ordemService.listar(),
+        ordemService.listarPorCliente(id),
       ]);
-      setCliente(c); setMotos(m); setOrdens(o.filter((os: any) => os.cliente_id === id));
+      setCliente(c); setMotos(m); setOrdens(o);
       setLoading(false);
     } catch (err: any) {
       setError('Cliente não encontrado'); setLoading(false);
