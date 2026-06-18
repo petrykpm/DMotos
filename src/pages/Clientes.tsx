@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, ChevronRight, Phone, Users } from 'lucide-react';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { LoadingState } from '@/components/shared/LoadingState';
-import { clienteService } from '@/services/api';
+import { clienteService, ordemService } from '@/services/api';
 
 export default function Clientes() {
   const navigate = useNavigate();
@@ -11,10 +11,17 @@ export default function Clientes() {
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [error, setError] = useState('');
+  const [ordemCount, setOrdemCount] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    clienteService.listar()
-      .then(c => { setClientes(c); setLoading(false); })
+    Promise.all([clienteService.listar(), ordemService.listar()])
+      .then(([c, o]) => {
+        setClientes(c);
+        const counts: Record<string, number> = {};
+        o.forEach((os: any) => { counts[os.cliente_id] = (counts[os.cliente_id] || 0) + 1; });
+        setOrdemCount(counts);
+        setLoading(false);
+      })
       .catch(err => { console.error(err); setError('Erro ao carregar clientes'); setLoading(false); });
   }, []);
 
@@ -61,9 +68,16 @@ export default function Clientes() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate">{c.nome}</p>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                  <Phone size={10} />
-                  <span>{c.telefone}</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Phone size={10} />
+                    <span>{c.telefone}</span>
+                  </div>
+                  {ordemCount[c.id] > 0 && (
+                    <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
+                      {ordemCount[c.id]} OS
+                    </span>
+                  )}
                 </div>
               </div>
               <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, ChevronRight, Wrench } from 'lucide-react';
+import { PlusCircle, ChevronRight, Wrench, Calendar } from 'lucide-react';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { LoadingState } from '@/components/shared/LoadingState';
@@ -19,6 +19,7 @@ export default function OrdensServico() {
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [statusFilter, setStatusFilter] = useState('todas');
+  const [periodoFilter, setPeriodoFilter] = useState('todos');
 
   useEffect(() => {
     ordemService.listar()
@@ -29,7 +30,19 @@ export default function OrdensServico() {
   const filtered = ordens.filter(o => {
     const matchBusca = !busca || (o.clienteNome || '').toLowerCase().includes(busca.toLowerCase()) || o.numero.toLowerCase().includes(busca.toLowerCase()) || (o.motoDescricao || '').toLowerCase().includes(busca.toLowerCase());
     const matchStatus = statusFilter === 'todas' || o.status === statusFilter;
-    return matchBusca && matchStatus;
+    let matchPeriodo = true;
+    if (periodoFilter !== 'todos') {
+      const now = new Date();
+      const created = new Date(o.created_at);
+      if (periodoFilter === 'hoje') {
+        matchPeriodo = created.toDateString() === now.toDateString();
+      } else if (periodoFilter === '7d') {
+        matchPeriodo = (now.getTime() - created.getTime()) <= 7 * 24 * 60 * 60 * 1000;
+      } else if (periodoFilter === '30d') {
+        matchPeriodo = (now.getTime() - created.getTime()) <= 30 * 24 * 60 * 60 * 1000;
+      }
+    }
+    return matchBusca && matchStatus && matchPeriodo;
   });
 
   return (
@@ -55,6 +68,18 @@ export default function OrdensServico() {
             {t.label}
           </button>
         ))}
+      </div>
+
+      <div className="px-4 mb-3 flex items-center gap-2">
+        <Calendar size={13} className="text-muted-foreground flex-shrink-0" />
+        <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
+          {[{ k: 'todos', l: 'Qualquer data' }, { k: 'hoje', l: 'Hoje' }, { k: '7d', l: 'Últimos 7 dias' }, { k: '30d', l: 'Últimos 30 dias' }].map(f => (
+            <button key={f.k} onClick={() => setPeriodoFilter(f.k)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${periodoFilter === f.k ? 'bg-card border border-primary text-foreground' : 'bg-secondary text-muted-foreground'}`}>
+              {f.l}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? <LoadingState /> : filtered.length === 0 ? (

@@ -184,7 +184,7 @@ export const dashboardService = {
     return {
       totalClientes: clientesRes.count || 0,
       totalItensEstoque: pecas.reduce((t: number, p: any) => t + (p.quantidade || 0), 0),
-      totalMotosNaOficina: ordens.filter((o: any) => o.status === 'aberta' || o.status === 'em_andamento').length,
+      totalMotosNaOficina: new Set(ordens.filter((o: any) => o.status === 'aberta' || o.status === 'em_andamento').map((o: any) => o.moto_id)).size,
       itensComEstoqueBaixo: alertas,
       ordensRecentes: ordens,
     };
@@ -205,7 +205,7 @@ export const configService = {
   },
   async atualizar(form: Record<string, any>) {
     const user_id = await getUserId();
-    const { data, error } = await supabase.from('configuracoes').update({ ...form, updated_at: new Date().toISOString() }).eq('user_id', user_id).select().single();
+    const { data, error } = await supabase.from('configuracoes').upsert({ user_id, ...form, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }).select().single();
     if (error) throwError(error, 'configService.atualizar');
     return data;
   },

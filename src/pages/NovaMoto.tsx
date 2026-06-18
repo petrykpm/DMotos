@@ -40,6 +40,7 @@ export default function NovaMoto() {
         cor: cor.trim() || undefined,
         placa: placa.trim().toUpperCase() || undefined,
         km: km ? parseInt(km) : undefined,
+        observacoes: observacoes.trim() || undefined,
       });
       toast.success('Moto cadastrada!');
       navigate(-1);

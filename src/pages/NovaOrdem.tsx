@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Loader2, ChevronRight, Plus, Minus } from 'lucide-react';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { clienteService, motoService, pecaService, ordemService } from '@/services/api';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ export default function NovaOrdem() {
   const [selectedPecas, setSelectedPecas] = useState<{ peca: any; qtd: number }[]>([]);
   const [saving, setSaving] = useState(false);
   const [buscaCliente, setBuscaCliente] = useState('');
+  const [buscaPeca, setBuscaPeca] = useState('');
 
   useEffect(() => {
     clienteService.listar().then(setClientes).catch(err => {
@@ -43,6 +44,25 @@ export default function NovaOrdem() {
   const totalPecas = selectedPecas.reduce((t, sp) => t + Number(sp.peca.preco) * sp.qtd, 0);
   const totalMaoObra = parseFloat(maoObra) || 0;
   const totalGeral = totalPecas + totalMaoObra;
+
+  const togglePeca = (peca: any) => {
+    const exists = selectedPecas.find(sp => sp.peca.id === peca.id);
+    if (exists) {
+      setSelectedPecas(prev => prev.filter(sp => sp.peca.id !== peca.id));
+    } else {
+      setSelectedPecas(prev => [...prev, { peca, qtd: 1 }]);
+    }
+  };
+
+  const updateQtd = (pecaId: string, delta: number) => {
+    setSelectedPecas(prev => prev.map(sp => {
+      if (sp.peca.id !== pecaId) return sp;
+      const novaQtd = sp.qtd + delta;
+      if (novaQtd <= 0) return sp;
+      if (novaQtd > sp.peca.quantidade) { toast.error(`Só há ${sp.peca.quantidade} unidades em estoque`); return sp; }
+      return { ...sp, qtd: novaQtd };
+    }));
+  };
 
   const handleSubmit = async () => {
     if (!selectedCliente || !selectedMoto || !problema.trim()) {
@@ -83,6 +103,7 @@ export default function NovaOrdem() {
   const currentIdx = steps.findIndex(s => s.key === step);
 
   const inputClass = "w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
+  const pecasFiltradas = pecas.filter(p => !buscaPeca || p.nome.toLowerCase().includes(buscaPeca.toLowerCase()) || (p.compatibilidade || '').toLowerCase().includes(buscaPeca.toLowerCase()));
 
   return (
     <div className="pb-24 animate-fade-in">
@@ -91,11 +112,12 @@ export default function NovaOrdem() {
           <ArrowLeft size={18} />
         </button>
         <h1 className="font-display text-lg font-bold text-foreground">Nova OS</h1>
+        <span className="ml-auto text-xs text-muted-foreground">{currentIdx + 1}/{steps.length}</span>
       </div>
 
       <div className="px-4 mb-4 flex gap-1">
         {steps.map((s, i) => (
-          <div key={s.key} className={`flex-1 h-1 rounded-full ${i <= currentIdx ? 'bg-primary' : 'bg-secondary'}`} />
+          <div key={s.key} className={`flex-1 h-1 rounded-full transition-all ${i <= currentIdx ? 'bg-primary' : 'bg-secondary'}`} />
         ))}
       </div>
 
@@ -146,7 +168,7 @@ export default function NovaOrdem() {
                   }`}>
                   <div>
                     <p className="text-sm font-medium text-foreground">{m.marca} {m.modelo} {m.ano || ''}</p>
-                    <p className="text-xs text-muted-foreground">{m.placa} • {m.cor}</p>
+                    <p className="text-xs text-muted-foreground">{[m.placa, m.cor].filter(Boolean).join(' • ')}</p>
                   </div>
                   <ChevronRight size={16} className="text-muted-foreground" />
                 </button>
@@ -185,14 +207,36 @@ export default function NovaOrdem() {
       {step === 'pecas' && (
         <div className="px-4">
           <SectionTitle title="Adicionar Peças (opcional)" />
+          <input value={buscaPeca} onChange={e => setBuscaPeca(e.target.value)} placeholder="Buscar peça..."
+            className="w-full h-11 px-4 mb-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+
+          {/* Peças selecionadas com controle de quantidade */}
+          {selectedPecas.length > 0 && (
+            <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
+              <p className="text-xs font-semibold text-primary mb-2">{selectedPecas.length} peça(s) selecionada(s)</p>
+              {selectedPecas.map(sp => (
+                <div key={sp.peca.id} className="flex items-center justify-between">
+                  <p className="text-sm text-foreground flex-1 truncate">{sp.peca.nome}</p>
+                  <div className="flex items-center gap-2 ml-2">
+                    <button onClick={() => updateQtd(sp.peca.id, -1)} className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform">
+                      <Minus size={12} />
+                    </button>
+                    <span className="text-sm font-bold text-foreground w-5 text-center">{sp.qtd}</span>
+                    <button onClick={() => updateQtd(sp.peca.id, 1)} className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform">
+                      <Plus size={12} />
+                    </button>
+                    <span className="text-xs text-primary font-medium w-16 text-right">R$ {(sp.peca.preco * sp.qtd).toFixed(2)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="space-y-2 mb-4">
-            {pecas.map(p => {
+            {pecasFiltradas.map(p => {
               const sel = selectedPecas.find(sp => sp.peca.id === p.id);
               return (
-                <button key={p.id} onClick={() => {
-                  if (sel) setSelectedPecas(prev => prev.filter(sp => sp.peca.id !== p.id));
-                  else setSelectedPecas(prev => [...prev, { peca: p, qtd: 1 }]);
-                }}
+                <button key={p.id} onClick={() => togglePeca(p)}
                   className={`w-full flex items-center justify-between p-3 rounded-lg border text-left active:scale-[0.98] transition-transform ${
                     sel ? 'bg-primary/10 border-primary' : 'bg-card border-border'
                   }`}>
@@ -200,7 +244,7 @@ export default function NovaOrdem() {
                     <p className="text-sm font-medium text-foreground">{p.nome}</p>
                     <p className="text-xs text-muted-foreground">R$ {Number(p.preco).toFixed(2)} • {p.quantidade} em estoque</p>
                   </div>
-                  {sel && <span className="text-xs font-bold text-primary">✓</span>}
+                  {sel ? <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">✓ {sel.qtd}x</span> : <Plus size={16} className="text-muted-foreground" />}
                 </button>
               );
             })}
@@ -237,8 +281,8 @@ export default function NovaOrdem() {
                   <p className="text-muted-foreground text-xs mb-2">Peças:</p>
                   {selectedPecas.map(sp => (
                     <div key={sp.peca.id} className="flex justify-between">
-                      <span className="text-foreground">{sp.peca.nome}</span>
-                      <span className="text-foreground">R$ {Number(sp.peca.preco).toFixed(2)}</span>
+                      <span className="text-foreground">{sp.qtd}x {sp.peca.nome}</span>
+                      <span className="text-foreground">R$ {(Number(sp.peca.preco) * sp.qtd).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
