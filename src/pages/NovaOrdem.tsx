@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, ChevronRight, Plus, Minus } from 'lucide-react';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { clienteService, motoService, pecaService, ordemService } from '@/services/api';
 import { toast } from 'sonner';
+import { OfflineGuard } from '@/components/shared/OfflineGuard';
 
 type Step = 'cliente' | 'moto' | 'detalhes' | 'pecas' | 'resumo';
 
@@ -106,6 +107,7 @@ export default function NovaOrdem() {
   const pecasFiltradas = pecas.filter(p => !buscaPeca || p.nome.toLowerCase().includes(buscaPeca.toLowerCase()) || (p.compatibilidade || '').toLowerCase().includes(buscaPeca.toLowerCase()));
 
   return (
+    <OfflineGuard action="criar uma ordem de serviço">
     <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => currentIdx > 0 ? setStep(steps[currentIdx - 1].key) : navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground">
@@ -312,5 +314,6 @@ export default function NovaOrdem() {
         </div>
       )}
     </div>
+    </OfflineGuard>
   );
 }

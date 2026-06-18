@@ -17,6 +17,7 @@ import NovaOrdem from "./pages/NovaOrdem";
 import NovaMoto from "./pages/NovaMoto";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
+import { OfflineBanner } from "@/components/shared/OfflineBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +76,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Sonner position="top-center" />
+      <OfflineBanner />
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />

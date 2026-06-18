@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { clienteService } from '@/services/api';
 import { toast } from 'sonner';
+import { OfflineGuard } from '@/components/shared/OfflineGuard';
 
 export default function NovoCliente() {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function NovoCliente() {
   const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
 
   return (
+    <OfflineGuard action="cadastrar um cliente">
     <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
@@ -75,5 +77,6 @@ export default function NovoCliente() {
         </button>
       </form>
     </div>
+    </OfflineGuard>
   );
 }

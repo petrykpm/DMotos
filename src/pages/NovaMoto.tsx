@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { motoService, clienteService } from '@/services/api';
 import { toast } from 'sonner';
+import { OfflineGuard } from '@/components/shared/OfflineGuard';
 
 export default function NovaMoto() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function NovaMoto() {
   const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
 
   return (
+    <OfflineGuard action="cadastrar uma moto">
     <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
@@ -110,5 +112,6 @@ export default function NovaMoto() {
         </button>
       </form>
     </div>
+    </OfflineGuard>
   );
 }

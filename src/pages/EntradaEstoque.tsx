@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { pecaService } from '@/services/api';
 import { toast } from 'sonner';
+import { OfflineGuard } from '@/components/shared/OfflineGuard';
 
 const categorias = ['Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros'];
 
@@ -49,6 +50,7 @@ export default function EntradaEstoque() {
   const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
 
   return (
+    <OfflineGuard action="cadastrar uma peça">
     <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
@@ -104,5 +106,6 @@ export default function EntradaEstoque() {
         </button>
       </form>
     </div>
+    </OfflineGuard>
   );
 }
