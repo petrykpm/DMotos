@@ -74,7 +74,14 @@ export default function ClienteDetalhe() {
     try {
       await clienteService.deletar(id!);
       toast.success('Cliente excluído!'); navigate('/clientes');
-    } catch (err: any) { toast.error(err.message || 'Erro ao excluir. Verifique se não há OS vinculada.'); }
+    } catch (err: any) {
+      const msg = err.message || '';
+      if (msg.includes('foreign key') || msg.includes('fkey')) {
+        toast.error('Não é possível excluir — há ordens de serviço vinculadas.');
+      } else {
+        toast.error('Erro ao excluir.');
+      }
+    }
   };
 
   const openEditMoto = (m: any) => {
@@ -95,7 +102,14 @@ export default function ClienteDetalhe() {
   const handleDeleteMoto = async (motoId: string) => {
     if (!confirm('Excluir esta moto?')) return;
     try { await motoService.deletar(motoId); toast.success('Moto excluída!'); loadData(); }
-    catch (err: any) { toast.error(err.message || 'Erro ao excluir. Verifique se não há OS vinculada.'); }
+    catch (err: any) {
+      const msg = err.message || '';
+      if (msg.includes('foreign key') || msg.includes('fkey')) {
+        toast.error('Não é possível excluir — há ordens de serviço vinculadas.');
+      } else {
+        toast.error('Erro ao excluir.');
+      }
+    }
   };
 
   if (loading) return <LoadingState />;

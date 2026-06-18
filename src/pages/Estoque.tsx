@@ -62,7 +62,14 @@ export default function Estoque() {
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir esta peça do estoque?')) return;
     try { await pecaService.deletar(id); toast.success('Peça excluída!'); loadData(); }
-    catch (err: any) { toast.error(err.message || 'Erro ao excluir. Pode estar vinculada a uma OS.'); }
+    catch (err: any) {
+      const msg = err.message || '';
+      if (msg.includes('foreign key') || msg.includes('fkey') || msg.includes('ordem_itens')) {
+        toast.error('Não é possível excluir — esta peça está vinculada a uma ordem de serviço.');
+      } else {
+        toast.error('Erro ao excluir a peça.');
+      }
+    }
   };
 
   const filtered = pecas.filter(p => {
