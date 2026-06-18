@@ -46,7 +46,7 @@ export default function OrdensServico() {
   });
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 lg:pb-8 animate-fade-in">
       <div className="px-4 pt-5 pb-3 flex items-center justify-between">
         <h1 className="font-display text-xl font-bold text-foreground">Ordens de Serviço</h1>
         <button onClick={() => navigate('/ordens/nova')}
@@ -91,7 +91,7 @@ export default function OrdensServico() {
           </button>
         </div>
       ) : (
-        <div className="px-4 space-y-2">
+        <div className="px-4 space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
           {filtered.map(o => (
             <button key={o.id} onClick={() => navigate(`/ordens/${o.id}`)}
               className="w-full p-4 bg-card rounded-xl border border-border text-left active:scale-[0.98] transition-transform">

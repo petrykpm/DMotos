@@ -27,7 +27,8 @@ export default function Home() {
   if (loading || !data) return <LoadingState />;
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 lg:pb-8 animate-fade-in">
+
       {/* Header */}
       <div className="px-4 pt-5 pb-4 flex items-center justify-between">
         <div>
@@ -40,7 +41,7 @@ export default function Home() {
       </div>
 
       {/* Cards resumo */}
-      <div className="px-4 grid grid-cols-3 gap-3 mb-6">
+      <div className="px-4 grid grid-cols-3 gap-3 mb-6 lg:gap-4">
         <button onClick={() => navigate('/clientes')}
           className="bg-card border border-border rounded-2xl p-3.5 text-left active:scale-95 transition-transform shadow-card">
           <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center mb-2.5">
@@ -90,66 +91,71 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Alertas estoque */}
-      {data.itensComEstoqueBaixo.length > 0 && (
-        <div className="px-4 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Estoque Baixo</p>
-            <button onClick={() => navigate('/estoque')} className="text-xs text-primary font-medium">Ver tudo</button>
-          </div>
-          <div className="space-y-2">
-            {data.itensComEstoqueBaixo.slice(0, 3).map(item => (
-              <div key={item.pecaId} className="flex items-center justify-between p-3 bg-card rounded-xl border border-border">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.status === 'critico' ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
-                    <AlertTriangle size={14} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{item.pecaNome}</p>
-                    <p className="text-xs text-muted-foreground">{item.quantidade} un. restantes</p>
-                  </div>
-                </div>
-                <StatusBadge status={item.status} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Desktop: 2 colunas para alertas + ordens */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:px-4">
 
-      {/* Ordens recentes */}
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ordens Recentes</p>
-          <button onClick={() => navigate('/ordens')} className="text-xs text-primary font-medium">Ver todas</button>
-        </div>
-        {data.ordensRecentes.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">
-            <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center mx-auto mb-3">
-              <Wrench size={24} className="opacity-30" />
+        {/* Alertas estoque */}
+        {data.itensComEstoqueBaixo.length > 0 && (
+          <div className="px-4 mb-6 lg:px-0">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Estoque Baixo</p>
+              <button onClick={() => navigate('/estoque')} className="text-xs text-primary font-medium">Ver tudo</button>
             </div>
-            <p className="text-sm">Nenhuma ordem ainda</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {data.ordensRecentes.slice(0, 5).map(ordem => (
-              <button key={ordem.id} onClick={() => navigate(`/ordens/${ordem.id}`)}
-                className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border active:scale-[0.98] transition-transform text-left shadow-card">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-primary font-mono tracking-wider">{ordem.numero}</span>
-                    <StatusBadge status={ordem.status} />
+            <div className="space-y-2">
+              {data.itensComEstoqueBaixo.slice(0, 3).map(item => (
+                <div key={item.pecaId} className="flex items-center justify-between p-3 bg-card rounded-xl border border-border">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.status === 'critico' ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
+                      <AlertTriangle size={14} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{item.pecaNome}</p>
+                      <p className="text-xs text-muted-foreground">{item.quantidade} un. restantes</p>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-foreground truncate">{ordem.clienteNome}</p>
-                  <p className="text-xs text-muted-foreground truncate">{ordem.motoDescricao}</p>
+                  <StatusBadge status={item.status} />
                 </div>
-                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                  <span className="text-sm font-bold text-foreground">R$ {Number(ordem.valor_total).toFixed(2)}</span>
-                  <ChevronRight size={14} className="text-muted-foreground" />
-                </div>
-              </button>
-            ))}
+              ))}
+            </div>
           </div>
         )}
+
+        {/* Ordens recentes */}
+        <div className="px-4 lg:px-0 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ordens Recentes</p>
+            <button onClick={() => navigate('/ordens')} className="text-xs text-primary font-medium">Ver todas</button>
+          </div>
+          {data.ordensRecentes.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <div className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center mx-auto mb-3">
+                <Wrench size={24} className="opacity-30" />
+              </div>
+              <p className="text-sm">Nenhuma ordem ainda</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {data.ordensRecentes.slice(0, 5).map(ordem => (
+                <button key={ordem.id} onClick={() => navigate(`/ordens/${ordem.id}`)}
+                  className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border active:scale-[0.98] transition-transform text-left shadow-card">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-primary font-mono tracking-wider">{ordem.numero}</span>
+                      <StatusBadge status={ordem.status} />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate">{ordem.clienteNome}</p>
+                    <p className="text-xs text-muted-foreground truncate">{ordem.motoDescricao}</p>
+                  </div>
+                  <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                    <span className="text-sm font-bold text-foreground">R$ {Number(ordem.valor_total).toFixed(2)}</span>
+                    <ChevronRight size={14} className="text-muted-foreground" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

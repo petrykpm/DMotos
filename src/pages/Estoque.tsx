@@ -73,7 +73,7 @@ export default function Estoque() {
   });
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 lg:pb-8 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center justify-between">
         <h1 className="font-display text-xl font-bold text-foreground">Estoque</h1>
         <button onClick={() => navigate('/estoque/entrada')} className="flex items-center gap-1.5 px-3 py-2 bg-primary rounded-lg text-primary-foreground text-xs font-bold active:scale-95 transition-transform"><Plus size={15} /> Nova Peça</button>

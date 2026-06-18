@@ -30,7 +30,7 @@ export default function Clientes() {
     : clientes;
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 lg:pb-8 animate-fade-in">
       <div className="px-4 pt-5 pb-3 flex items-center justify-between">
         <h1 className="font-display text-xl font-bold text-foreground">Clientes</h1>
         <button onClick={() => navigate('/clientes/novo')}
@@ -58,7 +58,7 @@ export default function Clientes() {
           )}
         </div>
       ) : (
-        <div className="px-4 space-y-2">
+        <div className="px-4 space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
           <p className="text-xs text-muted-foreground mb-1">{filtered.length} cliente{filtered.length !== 1 ? 's' : ''}</p>
           {filtered.map(c => (
             <button key={c.id} onClick={() => navigate(`/clientes/${c.id}`)}

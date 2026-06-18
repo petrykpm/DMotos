@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { BottomNav } from "@/components/shared/BottomNav";
+import { Sidebar } from "@/components/shared/Sidebar";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Clientes from "./pages/Clientes";
@@ -43,9 +44,15 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background max-w-lg mx-auto relative">
-      {children}
-      <BottomNav />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar />
+      {/* Conteúdo principal */}
+      <div className="flex-1 lg:ml-60 relative">
+        <div className="max-w-lg mx-auto lg:max-w-4xl lg:mx-0 lg:px-0 relative min-h-screen">
+          {children}
+          <BottomNav />
+        </div>
+      </div>
     </div>
   );
 }

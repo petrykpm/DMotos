@@ -98,7 +98,7 @@ export default function Configuracoes() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 lg:pb-8 animate-fade-in">
 
       {/* Header com perfil */}
       <div className="px-4 pt-5 pb-4">
