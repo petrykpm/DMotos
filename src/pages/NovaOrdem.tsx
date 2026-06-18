@@ -85,7 +85,7 @@ export default function NovaOrdem() {
   const inputClass = "w-full h-12 px-4 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
 
   return (
-    <div className="pb-20 animate-fade-in">
+    <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => currentIdx > 0 ? setStep(steps[currentIdx - 1].key) : navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground">
           <ArrowLeft size={18} />

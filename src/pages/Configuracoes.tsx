@@ -99,7 +99,7 @@ export default function Configuracoes() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className="pb-20 animate-fade-in">
+    <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3">
         <h1 className="font-display text-xl font-bold text-foreground">Configurações</h1>
       </div>

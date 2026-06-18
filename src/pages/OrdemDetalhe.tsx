@@ -75,7 +75,7 @@ export default function OrdemDetalhe() {
 
   if (loading) return <LoadingState />;
   if (error || !ordem) return (
-    <div className="pb-20 animate-fade-in">
+    <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
       </div>
@@ -89,7 +89,7 @@ export default function OrdemDetalhe() {
   };
 
   return (
-    <div className="pb-20 animate-fade-in">
+    <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
         <div className="flex-1">

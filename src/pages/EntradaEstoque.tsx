@@ -49,7 +49,7 @@ export default function EntradaEstoque() {
   const labelClass = "text-xs font-medium text-muted-foreground mb-1.5 block";
 
   return (
-    <div className="pb-20 animate-fade-in">
+    <div className="pb-24 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-secondary text-foreground"><ArrowLeft size={18} /></button>
         <h1 className="font-display text-lg font-bold text-foreground">Nova Peça</h1>
