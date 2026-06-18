@@ -5,17 +5,14 @@ interface LogoHeaderProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const sizes = { sm: 'h-8', md: 'h-12', lg: 'h-20' };
+const sizes = { sm: 'h-7', md: 'h-10', lg: 'h-20' };
 
 export function LogoHeader({ showName = true, size = 'md' }: LogoHeaderProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <img src={logo} alt="DM Motos" className={`${sizes[size]} w-auto object-contain`} />
       {showName && (
-        <div>
-          <h1 className="font-display text-lg font-bold text-foreground leading-tight">DM MOTOS</h1>
-          <p className="text-[10px] text-muted-foreground tracking-wider uppercase">Peças e Serviços</p>
-        </div>
+        <h1 className="font-display text-lg font-bold text-foreground leading-tight tracking-wider">DM MOTOS</h1>
       )}
     </div>
   );
