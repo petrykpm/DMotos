@@ -1,0 +1,18 @@
+=== INSTRUÇÕES ===
+
+1. Copie TODOS esses arquivos para o seu repositório, mantendo a estrutura de pastas.
+
+2. DELETE o arquivo: src/services/mockData.ts (se existir)
+
+3. Rode: npm install
+
+4. Commit e push:
+   git add -A
+   git commit -m "feat: integração Supabase completa"
+   git push origin main
+
+5. No Vercel, adicione as env vars:
+   VITE_SUPABASE_URL=https://cdeakrajjmjdrzbcrbjq.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+IMPORTANTE: Apague src/services/mockData.ts do repositório!
