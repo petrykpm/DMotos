@@ -57,9 +57,9 @@ export const motoService = {
     if (error) throwError(error, 'motoService.listarPorCliente');
     return (data || []).map((m: any) => ({ ...m, clienteNome: m.clientes?.nome || '' }));
   },
-  async criar(form: { cliente_id: string; marca: string; modelo: string; ano?: number; cor?: string; placa?: string; km?: number }) {
+  async criar(form: { cliente_id: string; marca: string; modelo: string; ano?: number; cor?: string; placa?: string; km?: number; observacoes?: string }) {
     const user_id = await getUserId();
-    const { data, error } = await supabase.from('motos').insert({ user_id, cliente_id: form.cliente_id, marca: form.marca, modelo: form.modelo, ano: form.ano || null, cor: form.cor || null, placa: form.placa || null, km: form.km || null }).select().single();
+    const { data, error } = await supabase.from('motos').insert({ user_id, cliente_id: form.cliente_id, marca: form.marca, modelo: form.modelo, ano: form.ano || null, cor: form.cor || null, placa: form.placa || null, km: form.km || null, observacoes: form.observacoes || null }).select().single();
     if (error) throwError(error, 'motoService.criar');
     return data;
   },

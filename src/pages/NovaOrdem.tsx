@@ -237,16 +237,29 @@ export default function NovaOrdem() {
           <div className="space-y-2 mb-4">
             {pecasFiltradas.map(p => {
               const sel = selectedPecas.find(sp => sp.peca.id === p.id);
+              const semEstoque = p.quantidade === 0;
               return (
-                <button key={p.id} onClick={() => togglePeca(p)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg border text-left active:scale-[0.98] transition-transform ${
-                    sel ? 'bg-primary/10 border-primary' : 'bg-card border-border'
+                <button key={p.id}
+                  onClick={() => !semEstoque && togglePeca(p)}
+                  disabled={semEstoque}
+                  className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-transform ${
+                    semEstoque ? 'opacity-50 bg-secondary border-border cursor-not-allowed' :
+                    sel ? 'bg-primary/10 border-primary active:scale-[0.98]' : 'bg-card border-border active:scale-[0.98]'
                   }`}>
                   <div>
                     <p className="text-sm font-medium text-foreground">{p.nome}</p>
-                    <p className="text-xs text-muted-foreground">R$ {Number(p.preco).toFixed(2)} • {p.quantidade} em estoque</p>
+                    <p className="text-xs text-muted-foreground">
+                      R$ {Number(p.preco).toFixed(2)} •{' '}
+                      {semEstoque
+                        ? <span className="text-destructive font-semibold">sem estoque</span>
+                        : `${p.quantidade} em estoque`}
+                    </p>
                   </div>
-                  {sel ? <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">✓ {sel.qtd}x</span> : <Plus size={16} className="text-muted-foreground" />}
+                  {semEstoque
+                    ? <span className="text-[10px] bg-destructive/10 text-destructive px-2 py-0.5 rounded font-medium">Indisponível</span>
+                    : sel
+                      ? <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">✓ {sel.qtd}x</span>
+                      : <Plus size={16} className="text-muted-foreground" />}
                 </button>
               );
             })}

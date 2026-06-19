@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 
-export async function gerarPdfOS(ordem: any) {
+export async function gerarPdfOS(ordem: any): Promise<void> {
+  if (!ordem) throw new Error('Dados da OS não disponíveis');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210;
   const margin = 15;
@@ -211,5 +212,10 @@ export async function gerarPdfOS(ordem: any) {
   doc.text('DM Motos — Sistema de Gestão', W / 2, 288, { align: 'center' });
   doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, W / 2, 293, { align: 'center' });
 
-  doc.save(`OS-${ordem.numero}.pdf`);
+  try {
+    doc.save(`OS-\${ordem.numero}.pdf`);
+  } catch (err) {
+    console.error('[PDF] Erro ao salvar:', err);
+    throw new Error('Erro ao gerar o arquivo PDF');
+  }
 }
