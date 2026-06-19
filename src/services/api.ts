@@ -183,7 +183,7 @@ export const ordemService = {
       const itensData = form.itens.map(i => ({ ordem_id: ordem.id, peca_id: i.peca_id, quantidade: i.quantidade, preco_unitario: i.preco_unitario, subtotal: i.preco_unitario * i.quantidade }));
       await supabase.from('ordem_itens').insert(itensData);
       for (const item of form.itens) {
-        try { const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single(); if (peca) await supabase.from('pecas').update({ quantidade: Math.max(0, peca.quantidade - item.quantidade), updated_at: new Date().toISOString() }).eq('id', item.peca_id); } catch {}
+        try { const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single(); if (peca) await supabase.from('pecas').update({ quantidade: Math.max(0, peca.quantidade - item.quantidade), updated_at: new Date().toISOString() }).eq('id', item.peca_id); } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
       }
     }
     return ordem;
@@ -201,16 +201,35 @@ export const ordemService = {
     return data;
   },
   async atualizarItens(ordemId: string, itens: { peca_id: string; quantidade: number; preco_unitario: number }[], novoTotal: number) {
-    // Remove todos os itens atuais
+    // 1. Busca itens atuais para restaurar estoque
+    const { data: itensAtuais } = await supabase.from('ordem_itens').select('peca_id, quantidade').eq('ordem_id', ordemId);
+
+    // 2. Restaura estoque dos itens antigos
+    for (const old of itensAtuais || []) {
+      try {
+        const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', old.peca_id).single();
+        if (peca) await supabase.from('pecas').update({ quantidade: peca.quantidade + old.quantidade, updated_at: new Date().toISOString() }).eq('id', old.peca_id);
+      } catch (e) { console.warn('[estoque] Falha ao restaurar quantidade:', e); }
+    }
+
+    // 3. Remove itens antigos da OS
     const { error: delErr } = await supabase.from('ordem_itens').delete().eq('ordem_id', ordemId);
     if (delErr) throwError(delErr, 'ordemService.atualizarItens.delete');
-    // Insere os novos
+
+    // 4. Insere novos itens e desconta estoque
     if (itens.length > 0) {
       const rows = itens.map(i => ({ ordem_id: ordemId, peca_id: i.peca_id, quantidade: i.quantidade, preco_unitario: i.preco_unitario, subtotal: i.preco_unitario * i.quantidade }));
       const { error: insErr } = await supabase.from('ordem_itens').insert(rows);
       if (insErr) throwError(insErr, 'ordemService.atualizarItens.insert');
+      for (const item of itens) {
+        try {
+          const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single();
+          if (peca) await supabase.from('pecas').update({ quantidade: Math.max(0, peca.quantidade - item.quantidade), updated_at: new Date().toISOString() }).eq('id', item.peca_id);
+        } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
+      }
     }
-    // Atualiza valor_total da OS
+
+    // 5. Atualiza valor_total da OS
     const { error: updErr } = await supabase.from('ordens_servico').update({ valor_total: novoTotal, updated_at: new Date().toISOString() }).eq('id', ordemId);
     if (updErr) throwError(updErr, 'ordemService.atualizarItens.total');
   },

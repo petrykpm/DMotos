@@ -76,10 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Timeout de 8s para evitar tela preta infinita caso o Supabase não responda
         const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout ao restaurar sessão')), 8000)
-        );
+        let timeoutId: ReturnType<typeof setTimeout>;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Timeout ao restaurar sessão')), 8000);
+        });
         const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
+        clearTimeout(timeoutId!);
         if (session?.user && mounted) {
           setUser(session.user);
           const p = await fetchOrCreateProfile(session.user);

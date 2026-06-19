@@ -12,10 +12,11 @@ export function OfflineBanner() {
       setWasOffline(true);
     } else if (wasOffline) {
       setShowReconnected(true);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowReconnected(false);
         setWasOffline(false);
       }, 3000);
+      return () => clearTimeout(timer);
     }
   }, [isOnline, wasOffline]);
 
