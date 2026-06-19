@@ -76,7 +76,10 @@ function AppRoutes() {
       <Route path="/ordens/nova" element={<AuthGuard><AppLayout><NovaOrdem /></AppLayout></AuthGuard>} />
       <Route path="/ordens/:id" element={<AuthGuard><AppLayout><OrdemDetalhe /></AppLayout></AuthGuard>} />
       <Route path="/motos/nova" element={<AuthGuard><AppLayout><NovaMoto /></AppLayout></AuthGuard>} />
+      <Route path="/motos/:id" element={<AuthGuard><AppLayout><MotoDetalhe /></AppLayout></AuthGuard>} />
       <Route path="/config" element={<AuthGuard><AppLayout><Configuracoes /></AppLayout></AuthGuard>} />
+      <Route path="/relatorio" element={<AuthGuard><AppLayout><Relatorio /></AppLayout></AuthGuard>} />
+      <Route path="/busca" element={<AuthGuard><AppLayout><Busca /></AppLayout></AuthGuard>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -86,9 +89,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Sonner position="top-center" />
-      <OfflineBanner />
       <BrowserRouter>
         <AuthProvider>
+          <OfflineBanner />
           <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
