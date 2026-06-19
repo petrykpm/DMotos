@@ -224,7 +224,7 @@ export default function ClienteDetalhe() {
         {motos.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma moto cadastrada</p> : (
           <div className="space-y-2">
             {motos.map((m: any) => (
-              <div key={m.id} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
+              <div key={m.id} onClick={() => navigate(`/motos/${m.id}`)} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border cursor-pointer active:scale-[0.98] transition-transform">
                 <Bike size={18} className="text-primary flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{m.marca} {m.modelo} {m.ano || ''}</p>

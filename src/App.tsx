@@ -19,6 +19,8 @@ import NovaMoto from "./pages/NovaMoto";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 import Relatorio from "./pages/Relatorio";
+import MotoDetalhe from "./pages/MotoDetalhe";
+import Busca from "./pages/Busca";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
 
 const queryClient = new QueryClient({

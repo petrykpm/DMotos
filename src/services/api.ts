@@ -143,6 +143,14 @@ export const ordemService = {
       motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
     }));
   },
+  async listarPorMoto(motoId: string) {
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').eq('moto_id', motoId).order('created_at', { ascending: false });
+    if (error) throwError(error, 'ordemService.listarPorMoto');
+    return (data || []).map((o: any) => ({
+      ...o, clienteNome: o.clientes?.nome || '',
+      motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
+    }));
+  },
   async listarPorCliente(clienteId: string) {
     const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').eq('cliente_id', clienteId).order('created_at', { ascending: false });
     if (error) throwError(error, 'ordemService.listarPorCliente');

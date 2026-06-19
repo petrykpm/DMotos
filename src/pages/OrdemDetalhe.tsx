@@ -159,7 +159,7 @@ export default function OrdemDetalhe() {
           className="p-2 rounded-lg bg-secondary text-muted-foreground disabled:opacity-50">
           {gerandoPdf ? <Loader2 size={16} className="animate-spin" /> : <FileDown size={16} />}
         </button>
-        {(ordem.status !== 'finalizada') && (
+        {true && (
           <>
             <button onClick={openEdit} className="p-2 rounded-lg bg-primary/10 text-primary"><Pencil size={16} /></button>
             <button onClick={openItens} className="p-2 rounded-lg bg-primary/10 text-primary"><ShoppingCart size={16} /></button>
