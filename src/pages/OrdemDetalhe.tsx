@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Bike, Package, Pencil, Trash2, X, Save } from 'lucide-react';
+import { ArrowLeft, User, Bike, Package, Pencil, Trash2, X, Save, FileDown, Loader2 } from 'lucide-react';
+import { gerarPdfOS } from '@/lib/gerarPdfOS';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -22,6 +23,7 @@ export default function OrdemDetalhe() {
   const [eServico, setEServico] = useState('');
   const [eMaoObra, setEMaoObra] = useState('');
   const [saving, setSaving] = useState(false);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
 
   const loadData = () => {
     if (!id) return;
@@ -67,6 +69,13 @@ export default function OrdemDetalhe() {
     finally { setSaving(false); }
   };
 
+  const handlePdf = async () => {
+    setGerandoPdf(true);
+    try { await gerarPdfOS(ordem); }
+    catch (err) { console.error('Erro ao gerar PDF:', err); }
+    finally { setGerandoPdf(false); }
+  };
+
   const handleDelete = async () => {
     if (!confirm('Excluir esta ordem de serviço? Esta ação não pode ser desfeita.')) return;
     try { await ordemService.deletar(id!); toast.success('OS excluída!'); navigate('/ordens'); }
@@ -96,7 +105,11 @@ export default function OrdemDetalhe() {
           <h1 className="font-display text-lg font-bold text-foreground">{ordem.numero}</h1>
         </div>
         <StatusBadge status={ordem.status} size="md" />
-        {(ordem.status === 'aberta' || ordem.status === 'em_andamento') && (
+        <button onClick={handlePdf} disabled={gerandoPdf}
+          className="p-2 rounded-lg bg-secondary text-muted-foreground disabled:opacity-50">
+          {gerandoPdf ? <Loader2 size={16} className="animate-spin" /> : <FileDown size={16} />}
+        </button>
+        {(ordem.status !== 'finalizada') && (
           <>
             <button onClick={openEdit} className="p-2 rounded-lg bg-primary/10 text-primary"><Pencil size={16} /></button>
             <button onClick={handleDelete} className="p-2 rounded-lg bg-destructive/10 text-destructive"><Trash2 size={16} /></button>

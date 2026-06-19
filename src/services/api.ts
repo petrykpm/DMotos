@@ -152,12 +152,14 @@ export const ordemService = {
     }));
   },
   async buscar(id: string) {
-    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano), ordem_itens(*, pecas(nome))').eq('id', id).single();
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome, telefone), motos(marca, modelo, ano, placa), ordem_itens(*, pecas(nome))').eq('id', id).single();
     if (error) throwError(error, 'ordemService.buscar');
     return {
       ...data, clienteNome: (data as any).clientes?.nome || '',
+      clienteTelefone: (data as any).clientes?.telefone || '',
       motoDescricao: (data as any).motos ? `${(data as any).motos.marca} ${(data as any).motos.modelo} ${(data as any).motos.ano || ''}`.trim() : '',
-      itens: ((data as any).ordem_itens || []).map((item: any) => ({ ...item, pecaNome: item.pecas?.nome || '' })),
+      motoPlaca: (data as any).motos?.placa || '',
+      itens: ((data as any).ordem_itens || []).map((item: any) => ({ ...item, pecaNome: item.pecas?.nome || '', subtotal: Number(item.preco_unitario || 0) * Number(item.quantidade || 0) })),
     };
   },
   async criar(form: { cliente_id: string; moto_id: string; problema_relatado: string; descricao_servico?: string; itens: { peca_id: string; quantidade: number; preco_unitario: number }[]; valor_mao_obra?: number }) {
