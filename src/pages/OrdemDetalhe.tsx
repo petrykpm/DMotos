@@ -7,7 +7,6 @@ import { LoadingState } from '@/components/shared/LoadingState';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { SectionTitle } from '@/components/shared/SectionTitle';
-import { ordemService } from '@/services/api';
 import { toast } from 'sonner';
 
 export default function OrdemDetalhe() {
@@ -31,6 +30,7 @@ export default function OrdemDetalhe() {
   const [itensEdit, setItensEdit] = useState<{ peca: any; qtd: number }[]>([]);
   const [buscaPeca, setBuscaPeca] = useState('');
   const [savingItens, setSavingItens] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const loadData = () => {
     if (!id) return;
@@ -79,7 +79,7 @@ export default function OrdemDetalhe() {
   const handlePdf = async () => {
     setGerandoPdf(true);
     try { await gerarPdfOS(ordem); }
-    catch (err) { console.error('Erro ao gerar PDF:', err); }
+    catch (err: any) { toast.error('Erro ao gerar PDF'); console.error(err); }
     finally { setGerandoPdf(false); }
   };
 
@@ -127,9 +127,9 @@ export default function OrdemDetalhe() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Excluir esta ordem de serviço? Esta ação não pode ser desfeita.')) return;
+    setConfirmDelete(false);
     try { await ordemService.deletar(id!); toast.success('OS excluída!'); navigate('/ordens'); }
-    catch (err: any) { toast.error(err.message || 'Erro ao excluir'); }
+    catch (err: any) { toast.error(err.message || 'Erro ao excluir OS'); }
   };
 
   if (loading) return <LoadingState />;
@@ -163,7 +163,7 @@ export default function OrdemDetalhe() {
           <>
             <button onClick={openEdit} className="p-2 rounded-lg bg-primary/10 text-primary"><Pencil size={16} /></button>
             <button onClick={openItens} className="p-2 rounded-lg bg-primary/10 text-primary"><ShoppingCart size={16} /></button>
-            <button onClick={handleDelete} className="p-2 rounded-lg bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
+            <button onClick={() => setConfirmDelete(true)} className="p-2 rounded-lg bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
           </>
         )}
       </div>
@@ -299,6 +299,22 @@ export default function OrdemDetalhe() {
               {savingItens ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
               {savingItens ? 'Salvando...' : 'Salvar Peças'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmar Exclusão OS */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
+            <h2 className="text-base font-bold text-foreground mb-2">Excluir OS?</h2>
+            <p className="text-sm text-muted-foreground mb-5">A ordem <span className="font-bold text-foreground">{ordem.numero}</span> será excluída permanentemente. Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmDelete(false)} className="flex-1 h-11 bg-secondary text-foreground font-medium rounded-xl active:scale-[0.97] transition-transform">Cancelar</button>
+              <button onClick={handleDelete} className="flex-1 h-11 bg-destructive text-white font-bold rounded-xl active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                <Trash2 size={15} /> Excluir
+              </button>
+            </div>
           </div>
         </div>
       )}

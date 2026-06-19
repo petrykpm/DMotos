@@ -69,11 +69,8 @@ export default function Estoque() {
     try {
       const os = await pecaService.buscarOSVinculadas(peca.id);
       if (os.length === 0) {
-        // Sem vínculos — exclui direto
-        if (!confirm('Excluir esta peça do estoque?')) { setLoadingDelete(false); return; }
-        await pecaService.deletar(peca.id);
-        toast.success('Peça excluída!');
-        loadData();
+        // Sem vínculos — abre modal de confirmação simples
+        setDeleteModal({ peca, osVinculadas: [] });
       } else {
         // Tem vínculos — abre modal
         setDeleteModal({ peca, osVinculadas: os });
@@ -89,8 +86,13 @@ export default function Estoque() {
     if (!deleteModal) return;
     setDeletingForce(true);
     try {
-      await pecaService.deletarForce(deleteModal.peca.id);
-      toast.success('Peça excluída e removida das ordens vinculadas.');
+      if (deleteModal.osVinculadas.length > 0) {
+        await pecaService.deletarForce(deleteModal.peca.id);
+        toast.success('Peça excluída e removida das ordens vinculadas.');
+      } else {
+        await pecaService.deletar(deleteModal.peca.id);
+        toast.success('Peça excluída!');
+      }
       setDeleteModal(null);
       loadData();
     } catch (err: any) {
@@ -192,7 +194,7 @@ export default function Estoque() {
               <div>
                 <h2 className="text-base font-bold text-foreground">Excluir peça?</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  <span className="font-semibold text-foreground">{deleteModal.peca.nome}</span> está vinculada a {deleteModal.osVinculadas.length} ordem{deleteModal.osVinculadas.length > 1 ? 's' : ''} de serviço:
+                  {deleteModal.osVinculadas.length > 0 ? (<><span className="font-semibold text-foreground">{deleteModal.peca.nome}</span> está vinculada a {deleteModal.osVinculadas.length} ordem{deleteModal.osVinculadas.length > 1 ? 's' : ''} de serviço:</>) : (<>Excluir <span className="font-semibold text-foreground">{deleteModal.peca.nome}</span> permanentemente?</>)}
                 </p>
               </div>
             </div>
@@ -228,7 +230,7 @@ export default function Estoque() {
               <button onClick={handleDeleteForce} disabled={deletingForce}
                 className="flex-1 h-11 bg-destructive text-white font-bold rounded-xl active:scale-[0.97] transition-transform disabled:opacity-50 flex items-center justify-center gap-2">
                 {deletingForce ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-                {deletingForce ? 'Excluindo...' : 'Excluir mesmo assim'}
+                {deletingForce ? 'Excluindo...' : deleteModal.osVinculadas.length > 0 ? 'Excluir mesmo assim' : 'Excluir'}
               </button>
             </div>
           </div>
