@@ -85,7 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user && mounted) {
           setUser(session.user);
           const p = await fetchOrCreateProfile(session.user);
-          if (mounted) setProfile(p);
+          if (mounted) {
+            if (!p) console.warn('[auth] Perfil não pôde ser carregado/criado');
+            setProfile(p ?? null);
+          }
         }
       } catch (err) {
         console.error('Erro ao restaurar sessão:', err);
@@ -103,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (event === 'SIGNED_IN' && session?.user) {
           setUser(session.user);
           const p = await fetchOrCreateProfile(session.user);
-          if (mounted) setProfile(p);
+          if (mounted) setProfile(p ?? null);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
@@ -132,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.user) {
         setUser(data.user);
         const p = await fetchOrCreateProfile(data.user);
+        if (!p) throw new Error('Não foi possível carregar o perfil. Tente novamente.');
         setProfile(p);
       }
     } catch (e: any) {
