@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, Package, FileText, Settings } from 'lucide-react';
+import { Home, Users, Package, FileText, Settings, TrendingUp } from 'lucide-react';
 
 const tabs = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/clientes', icon: Users, label: 'Clientes' },
   { path: '/estoque', icon: Package, label: 'Estoque' },
   { path: '/ordens', icon: FileText, label: 'OS' },
+  { path: '/relatorio', icon: TrendingUp, label: 'Relatório' },
   { path: '/config', icon: Settings, label: 'Config' },
 ];
 

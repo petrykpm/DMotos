@@ -18,6 +18,7 @@ import NovaOrdem from "./pages/NovaOrdem";
 import NovaMoto from "./pages/NovaMoto";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
+import Relatorio from "./pages/Relatorio";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
 
 const queryClient = new QueryClient({

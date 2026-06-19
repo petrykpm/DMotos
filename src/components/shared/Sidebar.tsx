@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, Package, FileText, Settings, Wrench } from 'lucide-react';
+import { Home, Users, Package, FileText, Settings, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo-dm-motos.png';
 
@@ -8,6 +8,7 @@ const tabs = [
   { path: '/clientes', icon: Users, label: 'Clientes' },
   { path: '/estoque', icon: Package, label: 'Estoque' },
   { path: '/ordens', icon: FileText, label: 'Ordens de Serviço' },
+  { path: '/relatorio', icon: TrendingUp, label: 'Relatório' },
   { path: '/config', icon: Settings, label: 'Configurações' },
 ];
 

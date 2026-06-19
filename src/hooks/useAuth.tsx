@@ -150,8 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const { data: updated, error } = await supabase
       .from('profiles')
-      .update({ ...data })
-      .eq('id', user.id)
+      .upsert({ id: user.id, ...data, updated_at: new Date().toISOString() }, { onConflict: 'id' })
       .select()
       .single();
     if (error) throw new Error(error.message);

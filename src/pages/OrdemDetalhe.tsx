@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Bike, Package, Pencil, Trash2, X, Save, FileDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Bike, Package, Pencil, Trash2, X, Save, FileDown, Loader2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { gerarPdfOS } from '@/lib/gerarPdfOS';
+import { ordemService, pecaService } from '@/services/api';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -24,6 +25,12 @@ export default function OrdemDetalhe() {
   const [eMaoObra, setEMaoObra] = useState('');
   const [saving, setSaving] = useState(false);
   const [gerandoPdf, setGerandoPdf] = useState(false);
+  // Modal editar peças
+  const [itensOpen, setItensOpen] = useState(false);
+  const [todasPecas, setTodasPecas] = useState<any[]>([]);
+  const [itensEdit, setItensEdit] = useState<{ peca: any; qtd: number }[]>([]);
+  const [buscaPeca, setBuscaPeca] = useState('');
+  const [savingItens, setSavingItens] = useState(false);
 
   const loadData = () => {
     if (!id) return;
@@ -76,6 +83,49 @@ export default function OrdemDetalhe() {
     finally { setGerandoPdf(false); }
   };
 
+  const openItens = async () => {
+    const pecas = await pecaService.listar();
+    setTodasPecas(pecas);
+    // Pre-populate with current itens
+    setItensEdit((ordem.itens || []).map((i: any) => ({
+      peca: pecas.find((p: any) => p.id === i.peca_id) || { id: i.peca_id, nome: i.pecaNome, preco: i.preco_unitario, quantidade: 999 },
+      qtd: i.quantidade,
+    })));
+    setItensOpen(true);
+  };
+
+  const togglePecaEdit = (peca: any) => {
+    const exists = itensEdit.find(i => i.peca.id === peca.id);
+    if (exists) setItensEdit(prev => prev.filter(i => i.peca.id !== peca.id));
+    else setItensEdit(prev => [...prev, { peca, qtd: 1 }]);
+  };
+
+  const updateQtdEdit = (pecaId: string, delta: number) => {
+    setItensEdit(prev => prev.map(i => {
+      if (i.peca.id !== pecaId) return i;
+      const nova = i.qtd + delta;
+      if (nova <= 0) return i;
+      return { ...i, qtd: nova };
+    }));
+  };
+
+  const handleSaveItens = async () => {
+    setSavingItens(true);
+    try {
+      const maoObra = Number(ordem.valor_mao_obra || 0);
+      const totalPecas = itensEdit.reduce((t, i) => t + Number(i.peca.preco) * i.qtd, 0);
+      await ordemService.atualizarItens(
+        id!,
+        itensEdit.map(i => ({ peca_id: i.peca.id, quantidade: i.qtd, preco_unitario: Number(i.peca.preco) })),
+        totalPecas + maoObra,
+      );
+      toast.success('Peças atualizadas!');
+      setItensOpen(false);
+      loadData();
+    } catch (err: any) { toast.error(err.message || 'Erro ao salvar peças'); }
+    finally { setSavingItens(false); }
+  };
+
   const handleDelete = async () => {
     if (!confirm('Excluir esta ordem de serviço? Esta ação não pode ser desfeita.')) return;
     try { await ordemService.deletar(id!); toast.success('OS excluída!'); navigate('/ordens'); }
@@ -112,6 +162,7 @@ export default function OrdemDetalhe() {
         {(ordem.status !== 'finalizada') && (
           <>
             <button onClick={openEdit} className="p-2 rounded-lg bg-primary/10 text-primary"><Pencil size={16} /></button>
+            <button onClick={openItens} className="p-2 rounded-lg bg-primary/10 text-primary"><ShoppingCart size={16} /></button>
             <button onClick={handleDelete} className="p-2 rounded-lg bg-destructive/10 text-destructive"><Trash2 size={16} /></button>
           </>
         )}
@@ -191,6 +242,63 @@ export default function OrdemDetalhe() {
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Mão de Obra (R$)</label><input value={eMaoObra} onChange={e => setEMaoObra(e.target.value)} type="number" step="0.01" min="0" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <button onClick={handleSave} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Peças */}
+      {itensOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+              <h2 className="text-base font-bold text-foreground">Editar Peças</h2>
+              <button onClick={() => setItensOpen(false)} className="p-1 text-muted-foreground"><X size={18} /></button>
+            </div>
+
+            {/* Selecionadas */}
+            {itensEdit.length > 0 && (
+              <div className="mb-3 p-3 bg-primary/5 border border-primary/20 rounded-xl flex-shrink-0">
+                <p className="text-xs font-semibold text-primary mb-2">{itensEdit.length} peça(s) selecionada(s)</p>
+                {itensEdit.map(i => (
+                  <div key={i.peca.id} className="flex items-center justify-between mb-1.5">
+                    <p className="text-xs text-foreground flex-1 truncate">{i.peca.nome}</p>
+                    <div className="flex items-center gap-1.5 ml-2">
+                      <button onClick={() => updateQtdEdit(i.peca.id, -1)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center"><Minus size={10} /></button>
+                      <span className="text-xs font-bold w-4 text-center">{i.qtd}</span>
+                      <button onClick={() => updateQtdEdit(i.peca.id, 1)} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center"><Plus size={10} /></button>
+                      <span className="text-xs text-primary w-16 text-right">R$ {(Number(i.peca.preco) * i.qtd).toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Busca */}
+            <input value={buscaPeca} onChange={e => setBuscaPeca(e.target.value)} placeholder="Buscar peça..."
+              className="w-full h-10 px-3 bg-secondary border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 mb-3 flex-shrink-0" />
+
+            {/* Lista de peças */}
+            <div className="overflow-y-auto flex-1 space-y-1.5 mb-4">
+              {todasPecas.filter(p => !buscaPeca || p.nome.toLowerCase().includes(buscaPeca.toLowerCase())).map(p => {
+                const sel = itensEdit.find(i => i.peca.id === p.id);
+                return (
+                  <button key={p.id} onClick={() => togglePecaEdit(p)}
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-colors ${sel ? 'bg-primary/10 border-primary' : 'bg-secondary border-transparent'}`}>
+                    <div>
+                      <p className="text-xs font-medium text-foreground">{p.nome}</p>
+                      <p className="text-[10px] text-muted-foreground">R$ {Number(p.preco).toFixed(2)} • {p.quantidade} em estoque</p>
+                    </div>
+                    {sel ? <span className="text-[10px] font-bold text-primary">✓ {sel.qtd}x</span> : <Plus size={14} className="text-muted-foreground" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button onClick={handleSaveItens} disabled={savingItens}
+              className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-xl active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2 flex-shrink-0">
+              {savingItens ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+              {savingItens ? 'Salvando...' : 'Salvar Peças'}
+            </button>
           </div>
         </div>
       )}

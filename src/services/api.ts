@@ -192,6 +192,20 @@ export const ordemService = {
     if (error) throwError(error, 'ordemService.atualizarStatus');
     return data;
   },
+  async atualizarItens(ordemId: string, itens: { peca_id: string; quantidade: number; preco_unitario: number }[], novoTotal: number) {
+    // Remove todos os itens atuais
+    const { error: delErr } = await supabase.from('ordem_itens').delete().eq('ordem_id', ordemId);
+    if (delErr) throwError(delErr, 'ordemService.atualizarItens.delete');
+    // Insere os novos
+    if (itens.length > 0) {
+      const rows = itens.map(i => ({ ordem_id: ordemId, peca_id: i.peca_id, quantidade: i.quantidade, preco_unitario: i.preco_unitario, subtotal: i.preco_unitario * i.quantidade }));
+      const { error: insErr } = await supabase.from('ordem_itens').insert(rows);
+      if (insErr) throwError(insErr, 'ordemService.atualizarItens.insert');
+    }
+    // Atualiza valor_total da OS
+    const { error: updErr } = await supabase.from('ordens_servico').update({ valor_total: novoTotal, updated_at: new Date().toISOString() }).eq('id', ordemId);
+    if (updErr) throwError(updErr, 'ordemService.atualizarItens.total');
+  },
   async deletar(id: string) {
     await supabase.from('ordem_itens').delete().eq('ordem_id', id);
     const { error } = await supabase.from('ordens_servico').delete().eq('id', id);
