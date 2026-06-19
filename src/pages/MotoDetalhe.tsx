@@ -55,8 +55,12 @@ export default function MotoDetalhe() {
   };
 
   const handleDeleteClick = async () => {
-    const os = await vinculoService.osDeMoto(id!);
-    setDeleteModal({ os });
+    try {
+      const os = await vinculoService.osDeMoto(id!);
+      setDeleteModal({ os });
+    } catch (err: any) {
+      toast.error('Erro ao verificar vínculos da moto');
+    }
   };
 
   const handleDeleteConfirm = async () => {

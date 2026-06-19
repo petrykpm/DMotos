@@ -16,7 +16,7 @@ export default function Login() {
     const trimSenha = senha.trim();
     if (!trimEmail || !trimSenha) { setLocalError('Preencha todos os campos'); return; }
     setLocalError('');
-    try { await login(trimEmail, trimSenha); } catch {}
+    try { await login(trimEmail, trimSenha); } catch (err: any) { setLocalError(err.message || 'Erro ao entrar'); }
   };
 
   return (
