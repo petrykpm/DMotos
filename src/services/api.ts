@@ -172,6 +172,17 @@ export const ordemService = {
   },
   async criar(form: { cliente_id: string; moto_id: string; problema_relatado: string; descricao_servico?: string; itens: { peca_id: string; quantidade: number; preco_unitario: number }[]; valor_mao_obra?: number }) {
     const user_id = await getUserId();
+
+    // Validar estoque disponível antes de qualquer operação
+    if (form.itens.length > 0) {
+      for (const item of form.itens) {
+        const { data: peca } = await supabase.from('pecas').select('nome, quantidade').eq('id', item.peca_id).single();
+        if (peca && peca.quantidade < item.quantidade) {
+          throw new Error(`Estoque insuficiente para "${peca.nome}": disponível ${peca.quantidade}, solicitado ${item.quantidade}`);
+        }
+      }
+    }
+
     let numero: string;
     const { data: numData, error: numErr } = await supabase.rpc('gerar_numero_os', { p_user_id: user_id });
     if (numErr) { numero = `OS-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`; } else { numero = numData; }
@@ -183,7 +194,7 @@ export const ordemService = {
       const itensData = form.itens.map(i => ({ ordem_id: ordem.id, peca_id: i.peca_id, quantidade: i.quantidade, preco_unitario: i.preco_unitario, subtotal: i.preco_unitario * i.quantidade }));
       await supabase.from('ordem_itens').insert(itensData);
       for (const item of form.itens) {
-        try { const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single(); if (peca) await supabase.from('pecas').update({ quantidade: Math.max(0, peca.quantidade - item.quantidade), updated_at: new Date().toISOString() }).eq('id', item.peca_id); } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
+        try { const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single(); if (peca) await supabase.from('pecas').update({ quantidade: peca.quantidade - item.quantidade, updated_at: new Date().toISOString() }).eq('id', item.peca_id); } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
       }
     }
     return ordem;
