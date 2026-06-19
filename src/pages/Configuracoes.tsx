@@ -176,7 +176,7 @@ export default function Configuracoes() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Versão</p>
-              <p className="text-xs text-muted-foreground">v2.5.0</p>
+              <p className="text-xs text-muted-foreground">v2.6.0</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-4">
@@ -199,7 +199,7 @@ export default function Configuracoes() {
           <LogOut size={17} />
           Sair do Sistema
         </button>
-        <p className="text-[10px] text-muted-foreground">DM Motos © 2026 • v2.5.0</p>
+        <p className="text-[10px] text-muted-foreground">DM Motos © 2026 • v2.6.0</p>
       </div>
 
       {/* Modal: Editar Usuário */}
