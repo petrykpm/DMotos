@@ -87,6 +87,8 @@ function AppRoutes() {
       <Route path="/ordens/:id" element={<AuthGuard><AppLayout><OrdemDetalhe /></AppLayout></AuthGuard>} />
       <Route path="/motos/nova" element={<AuthGuard><AppLayout><NovaMoto /></AppLayout></AuthGuard>} />
       <Route path="/motos/:id" element={<AuthGuard><AppLayout><MotoDetalhe /></AppLayout></AuthGuard>} />
+      <Route path="/motos" element={<AuthGuard><AppLayout><Motos /></AppLayout></AuthGuard>} />
+      <Route path="/categorias" element={<AuthGuard><AppLayout><Categorias /></AppLayout></AuthGuard>} />
       <Route path="/config" element={<AuthGuard><AppLayout><Configuracoes /></AppLayout></AuthGuard>} />
       <Route path="/relatorio" element={<AuthGuard><AppLayout><Relatorio /></AppLayout></AuthGuard>} />
       <Route path="/busca" element={<AuthGuard><AppLayout><Busca /></AppLayout></AuthGuard>} />
