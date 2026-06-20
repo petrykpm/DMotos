@@ -35,9 +35,9 @@ export default function Home() {
           <p className="text-xs text-muted-foreground font-medium">{saudacao}{primeiroNome ? `, ${primeiroNome}` : ''}</p>
           <LogoHeader size="sm" showName />
         </div>
-        <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm">
+        <button onClick={() => navigate('/config')} className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm active:scale-95 transition-transform">
           {primeiroNome?.charAt(0) || 'A'}
-        </div>
+        </button>
       </div>
 
       {/* Cards resumo */}
