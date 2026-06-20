@@ -31,6 +31,7 @@ export default function Estoque() {
   const [deleteModal, setDeleteModal] = useState<{ peca: any; osVinculadas: any[] } | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [deletingForce, setDeletingForce] = useState(false);
+  const [categorias, setCategorias] = useState<string[]>(['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros']);
 
   const loadData = () => {
     pecaService.listar()
