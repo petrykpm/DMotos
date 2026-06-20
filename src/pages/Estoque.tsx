@@ -38,7 +38,12 @@ export default function Estoque() {
       .catch(err => { console.error(err); setLoading(false); });
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+    categoriaService.listar()
+      .then(cats => setCategorias(['Todas', ...cats.map((cat: any) => cat.nome)]))
+      .catch(() => setCategorias(['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros']));
+  }, []);
 
   const openEdit = (p: any) => {
     setEditPeca(p); setENome(p.nome); setEModelo(p.modelo || '');
@@ -93,9 +98,6 @@ export default function Estoque() {
       }
       setDeleteModal(null);
       loadData();
-    categoriaService.listar()
-      .then(cats => setCategorias(['Todas', ...cats.map((cat: any) => cat.nome)]))
-      .catch(() => setCategorias(['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros']));
     } catch (err: any) {
       toast.error('Erro ao excluir.');
     } finally {
