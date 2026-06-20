@@ -14,7 +14,7 @@ export function BottomNav() {
   const { pathname } = useLocation();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom" style={{ background: 'hsl(0 0% 9%)', borderTop: '1px solid hsl(0 0% 15%)' }}>
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }} style={{ background: 'hsl(0 0% 9%)', borderTop: '1px solid hsl(0 0% 15%)' }}>
       <div className="flex items-center justify-around max-w-lg mx-auto" style={{ height: '64px' }}>
         {tabs.map(tab => {
           const isActive = tab.path === '/' ? pathname === '/' : pathname.startsWith(tab.path);

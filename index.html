@@ -18,7 +18,21 @@
 
     <title>DM Motos</title>
     <meta name="description" content="DM Motos - Sistema de gestão para oficina mecânica de motos" />
-  </head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #121212;
+    }
+    /* Capacitor safe area */
+    ion-app, #root {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  </style>
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
