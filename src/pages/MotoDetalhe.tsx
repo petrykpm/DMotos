@@ -168,7 +168,7 @@ export default function MotoDetalhe() {
 
       {/* Modal Editar */}
       {editOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6">
           <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-foreground">Editar Moto</h2>
@@ -196,7 +196,7 @@ export default function MotoDetalhe() {
 
       {/* Modal Delete */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6">
           <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
             <h2 className="text-base font-bold text-foreground mb-2">Excluir moto?</h2>
             {deleteModal.os.length > 0 ? (
