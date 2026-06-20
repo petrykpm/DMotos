@@ -57,6 +57,11 @@ export const motoService = {
     if (error) throwError(error, 'motoService.listarPorCliente');
     return (data || []).map((m: any) => ({ ...m, clienteNome: m.clientes?.nome || '' }));
   },
+  async buscar(id: string) {
+    const { data, error } = await supabase.from('motos').select('*, clientes(nome, telefone)').eq('id', id).single();
+    if (error) throwError(error, 'motoService.buscar');
+    return data;
+  },
   async criar(form: { cliente_id: string; marca: string; modelo: string; ano?: number; cor?: string; placa?: string; km?: number; observacoes?: string }) {
     const user_id = await getUserId();
     const { data, error } = await supabase.from('motos').insert({ user_id, cliente_id: form.cliente_id, marca: form.marca, modelo: form.modelo, ano: form.ano || null, cor: form.cor || null, placa: form.placa || null, km: form.km || null, observacoes: form.observacoes || null }).select().single();
@@ -341,5 +346,43 @@ export const vinculoService = {
     // 4. Remove moto
     const { error } = await supabase.from('motos').delete().eq('id', motoId);
     if (error) throwError(error, 'vinculoService.deletarMotoForce');
+  },
+};
+
+// ── Categorias customizáveis ──────────────────────────────────────────────
+export const categoriaService = {
+  async listar() {
+    const user_id = await getUserId();
+    const { data, error } = await supabase
+      .from('categorias_peca')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('nome', { ascending: true });
+    if (error) throwError(error, 'categoriaService.listar');
+    return data || [];
+  },
+  async criar(nome: string) {
+    const user_id = await getUserId();
+    const { data, error } = await supabase
+      .from('categorias_peca')
+      .insert({ user_id, nome })
+      .select()
+      .single();
+    if (error) throwError(error, 'categoriaService.criar');
+    return data;
+  },
+  async atualizar(id: string, nome: string) {
+    const { data, error } = await supabase
+      .from('categorias_peca')
+      .update({ nome, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throwError(error, 'categoriaService.atualizar');
+    return data;
+  },
+  async deletar(id: string) {
+    const { error } = await supabase.from('categorias_peca').delete().eq('id', id);
+    if (error) throwError(error, 'categoriaService.deletar');
   },
 };

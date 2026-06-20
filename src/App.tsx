@@ -21,6 +21,8 @@ import NotFound from "./pages/NotFound";
 import Relatorio from "./pages/Relatorio";
 import MotoDetalhe from "./pages/MotoDetalhe";
 import Busca from "./pages/Busca";
+import Motos from "./pages/Motos";
+import Categorias from "./pages/Categorias";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
 
 const queryClient = new QueryClient({

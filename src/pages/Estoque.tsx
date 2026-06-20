@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, X, Save, AlertTriangle, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Save, AlertTriangle, Loader2, Tag } from 'lucide-react';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -113,7 +113,10 @@ export default function Estoque() {
     <div className="pb-24 lg:pb-8 animate-fade-in">
       <div className="px-4 pt-4 pb-3 flex items-center justify-between overflow-hidden">
         <h1 className="font-display text-xl font-bold text-foreground">Estoque</h1>
-        <button onClick={() => navigate('/estoque/entrada')} className="flex items-center gap-1.5 px-3 py-2 bg-primary rounded-lg text-primary-foreground text-xs font-bold active:scale-95 transition-transform"><Plus size={15} /> Nova Peça</button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/categorias')} className="flex items-center gap-1.5 px-3 py-2 bg-secondary text-foreground text-xs font-medium rounded-lg active:scale-95 transition-transform"><Tag size={14} /> Categorias</button>
+          <button onClick={() => navigate('/estoque/entrada')} className="flex items-center gap-1.5 px-3 py-2 bg-primary rounded-lg text-primary-foreground text-xs font-bold active:scale-95 transition-transform"><Plus size={15} /> Nova Peça</button>
+        </div>
       </div>
       <div className="px-4 mb-3"><SearchInput value={busca} onChange={setBusca} placeholder="Buscar peça, modelo, SKU..." /></div>
       <div className="px-4 mb-3 overflow-x-auto scrollbar-none">
