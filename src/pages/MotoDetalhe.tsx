@@ -197,7 +197,7 @@ export default function MotoDetalhe() {
       {/* Modal Delete */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6">
-          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
             <h2 className="text-base font-bold text-foreground mb-2">Excluir moto?</h2>
             {deleteModal.os.length > 0 ? (
               <>

@@ -306,7 +306,7 @@ export default function OrdemDetalhe() {
       {/* Modal Confirmar Exclusão OS */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6" style={{ zIndex: 100 }}>
-          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
             <h2 className="text-base font-bold text-foreground mb-2">Excluir OS?</h2>
             <p className="text-sm text-muted-foreground mb-5">A ordem <span className="font-bold text-foreground">{ordem.numero}</span> será excluída permanentemente. Esta ação não pode ser desfeita.</p>
             <div className="flex gap-2">

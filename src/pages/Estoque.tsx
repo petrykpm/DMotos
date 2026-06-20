@@ -189,7 +189,7 @@ export default function Estoque() {
       {/* Modal Excluir Peça */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6">
-          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in">
+          <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">
             <div className="flex items-start gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle size={18} className="text-destructive" />
