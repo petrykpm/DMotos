@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { pecaService } from '@/services/api';
+import { pecaService, categoriaService } from '@/services/api';
 import { toast } from 'sonner';
 import { OfflineGuard } from '@/components/shared/OfflineGuard';
 
-const categorias = ['Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros'];
+
 
 export default function EntradaEstoque() {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ export default function EntradaEstoque() {
   const [preco, setPreco] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('5');
   const [saving, setSaving] = useState(false);
+  const [categorias, setCategorias] = useState<string[]>(['Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros']);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

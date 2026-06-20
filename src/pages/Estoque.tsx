@@ -5,10 +5,8 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { LoadingState } from '@/components/shared/LoadingState';
-import { pecaService } from '@/services/api';
+import { pecaService, categoriaService } from '@/services/api';
 import { toast } from 'sonner';
-
-const categorias = ['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros'];
 
 export default function Estoque() {
   const navigate = useNavigate();
@@ -95,6 +93,9 @@ export default function Estoque() {
       }
       setDeleteModal(null);
       loadData();
+    categoriaService.listar()
+      .then(cats => setCategorias(['Todas', ...cats.map((cat: any) => cat.nome)]))
+      .catch(() => setCategorias(['Todas', 'Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros']));
     } catch (err: any) {
       toast.error('Erro ao excluir.');
     } finally {
