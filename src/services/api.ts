@@ -386,3 +386,30 @@ export const categoriaService = {
     if (error) throwError(error, 'categoriaService.deletar');
   },
 };
+
+// ── Fotos de OS ───────────────────────────────────────────────────────────
+export const fotoService = {
+  async upload(ordemId: string, file: File, tipo: 'problema' | 'servico'): Promise<string> {
+    const user_id = await getUserId();
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${user_id}/${ordemId}/${tipo}_${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('os-fotos').upload(path, file, { upsert: true });
+    if (error) throwError(error, 'fotoService.upload');
+    const { data } = supabase.storage.from('os-fotos').getPublicUrl(path);
+    return data.publicUrl;
+  },
+  async listar(ordemId: string): Promise<{ url: string; tipo: string; path: string }[]> {
+    const user_id = await getUserId();
+    const { data, error } = await supabase.storage.from('os-fotos').list(`${user_id}/${ordemId}`);
+    if (error) return [];
+    return (data || []).map(f => ({
+      path: `${user_id}/${ordemId}/${f.name}`,
+      url: supabase.storage.from('os-fotos').getPublicUrl(`${user_id}/${ordemId}/${f.name}`).data.publicUrl,
+      tipo: f.name.startsWith('problema') ? 'problema' : 'servico',
+    }));
+  },
+  async deletar(path: string): Promise<void> {
+    const { error } = await supabase.storage.from('os-fotos').remove([path]);
+    if (error) throwError(error, 'fotoService.deletar');
+  },
+};

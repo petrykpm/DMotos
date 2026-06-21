@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Bike, Package, Pencil, Trash2, X, Save, FileDown, Loader2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { gerarPdfOS } from '@/lib/gerarPdfOS';
+import { FotosOS } from '@/components/shared/FotosOS';
 import { ordemService, pecaService } from '@/services/api';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -304,6 +305,13 @@ export default function OrdemDetalhe() {
       )}
 
       {/* Modal Confirmar Exclusão OS */}
+      {/* Fotos da OS */}
+      {ordem && (
+        <div className="px-4 mt-2 mb-4">
+          <FotosOS ordemId={ordem.id} readOnly={ordem.status === 'cancelada'} />
+        </div>
+      )}
+
       {confirmDelete && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6" style={{ zIndex: 100 }}>
           <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto">

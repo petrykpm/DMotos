@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, FileText, Wrench, Package, ChevronRight, Calendar } from 'lucide-react';
+import { TrendingUp, FileText, Wrench, Package, ChevronRight, Calendar, Download, Loader2 } from 'lucide-react';
+import { gerarPdfRelatorio } from '@/lib/gerarPdfRelatorio';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ordemService } from '@/services/api';
@@ -32,12 +33,35 @@ export default function Relatorio() {
   const [periodo, setPeriodo] = useState('30d');
   const [ordens, setOrdens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
 
   useEffect(() => {
     ordemService.listar()
       .then(o => { setOrdens(o); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  const exportarPdf = async () => {
+    setGerandoPdf(true);
+    try {
+      const labelPeriodo = periodos.find(p => p.key === periodo)?.label || periodo;
+      gerarPdfRelatorio({
+        periodo: labelPeriodo,
+        faturamento,
+        ticketMedio,
+        emAberto,
+        totalOS: filtered.length,
+        finalizadas: finalizadas.length,
+        canceladas: canceladas.length,
+        abertas: abertas.length,
+        ordens: filtered,
+      });
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+    } finally {
+      setGerandoPdf(false);
+    }
+  };
 
   const filtrar = (os: any[]) => {
     const now = new Date();
@@ -65,7 +89,14 @@ export default function Relatorio() {
     <div className="pb-24 lg:pb-8 animate-fade-in">
       <div className="px-4 pt-5 pb-3">
         <h1 className="font-display text-xl font-bold text-foreground">Relatório</h1>
+        <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground mt-0.5">Visão financeira da oficina</p>
+        <button onClick={exportarPdf} disabled={gerandoPdf || filtered.length === 0}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-xs font-medium active:scale-95 transition-transform disabled:opacity-40">
+          {gerandoPdf ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+          Exportar PDF
+        </button>
+      </div>
       </div>
 
       {/* Filtro período */}

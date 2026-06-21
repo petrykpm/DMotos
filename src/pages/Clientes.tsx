@@ -11,6 +11,7 @@ export default function Clientes() {
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
   const [error, setError] = useState('');
+  const [letraFiltro, setLetraFiltro] = useState('');
   const [ordemCount, setOrdemCount] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -38,6 +39,24 @@ export default function Clientes() {
           <UserPlus size={15} /> Novo
         </button>
       </div>
+
+      {/* Filtro por letra */}
+      {clientes.length > 5 && (
+        <div className="px-4 mb-3 overflow-x-auto scrollbar-none">
+          <div className="flex gap-1.5 pb-1">
+            {letras.map(l => (
+              <button key={l} onClick={() => setLetraFiltro(l === 'Todos' ? '' : l)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex-shrink-0 ${
+                  (letraFiltro === l || (!letraFiltro && l === 'Todos'))
+                    ? 'bg-primary text-white'
+                    : 'bg-secondary text-muted-foreground'
+                }`}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="px-4 mb-4">
         <SearchInput value={busca} onChange={setBusca} placeholder="Buscar por nome ou telefone..." />
