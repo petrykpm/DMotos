@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { pecaService, categoriaService } from '@/services/api';
@@ -17,6 +17,16 @@ export default function EntradaEstoque() {
   const [preco, setPreco] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('5');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    categoriaService.listar()
+      .then(cats => {
+        if (cats.length > 0) {
+          setCategorias(cats.map((cat: any) => cat.nome));
+        }
+      })
+      .catch(() => {}); // mantém fallback hardcoded
+  }, []);
   const [categorias, setCategorias] = useState<string[]>(['Freio', 'Transmissão', 'Lubrificante', 'Filtro', 'Ignição', 'Pneu', 'Embreagem', 'Elétrica', 'Suspensão', 'Motor', 'Outros']);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -43,7 +43,7 @@ export default function NovaOrdem() {
   }, [selectedCliente]);
 
   const totalPecas = selectedPecas.reduce((t, sp) => t + Number(sp.peca.preco) * sp.qtd, 0);
-  const totalMaoObra = parseFloat(maoObra) || 0;
+  const totalMaoObra = parseFloat((maoObra || '0').replace(',', '.')) || 0;
   const totalGeral = totalPecas + totalMaoObra;
 
   const togglePeca = (peca: any) => {
@@ -197,7 +197,25 @@ export default function NovaOrdem() {
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Mão de Obra (R$)</label>
-            <input value={maoObra} onChange={e => setMaoObra(e.target.value)} placeholder="0,00" type="number" min="0" step="0.01" className={inputClass} />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R$</span>
+              <input
+                value={maoObra}
+                onChange={e => {
+                  // Aceita apenas números e vírgula/ponto
+                  const val = e.target.value.replace(/[^0-9.,]/g, '');
+                  setMaoObra(val);
+                }}
+                onBlur={e => {
+                  // Formata ao sair do campo
+                  const num = parseFloat(e.target.value.replace(',', '.')) || 0;
+                  if (num > 0) setMaoObra(num.toFixed(2).replace('.', ','));
+                }}
+                placeholder="0,00"
+                inputMode="decimal"
+                className={`${inputClass} pl-10`}
+              />
+            </div>
           </div>
           <button onClick={() => setStep('pecas')} disabled={!problema.trim()}
             className="w-full h-12 bg-gradient-red text-primary-foreground font-bold rounded-lg shadow-red disabled:opacity-50 active:scale-[0.97] transition-transform">
