@@ -44,7 +44,7 @@ export default function EntradaEstoque() {
         compatibilidade: compat.trim() || undefined,
         categoria: categoria || undefined,
         quantidade: qtd,
-        preco: parseFloat(preco) || 0,
+        preco: parseFloat((preco || '0').replace(',', '.')) || 0,
         estoque_minimo: parseInt(estoqueMinimo) || 5,
       });
       toast.success('Peça cadastrada no estoque!');
@@ -100,7 +100,20 @@ export default function EntradaEstoque() {
           </div>
           <div>
             <label className={labelClass}>Preço de Venda (R$)</label>
-            <input value={preco} onChange={e => setPreco(e.target.value)} placeholder="0,00" type="number" step="0.01" min="0" className={inputClass} />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">R$</span>
+              <input
+                value={preco}
+                onChange={e => setPreco(e.target.value.replace(/[^0-9.,]/g, ''))}
+                onBlur={e => {
+                  const num = parseFloat(e.target.value.replace(',', '.')) || 0;
+                  if (num > 0) setPreco(num.toFixed(2).replace('.', ','));
+                }}
+                placeholder="0,00"
+                inputMode="decimal"
+                className={`${inputClass} pl-10`}
+              />
+            </div>
           </div>
         </div>
 

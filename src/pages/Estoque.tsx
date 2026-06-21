@@ -60,7 +60,7 @@ export default function Estoque() {
       await pecaService.atualizar(editPeca.id, {
         nome: eNome.trim(), modelo: eModelo.trim() || null,
         compatibilidade: eCompat.trim() || null, categoria: eCategoria.trim() || null,
-        quantidade: parseInt(eQtd) || 0, preco: parseFloat(ePreco) || 0,
+        quantidade: parseInt(eQtd) || 0, preco: parseFloat((ePreco || '0').replace(',', '.')) || 0,
         estoque_minimo: parseInt(eEstMin) || 5,
       });
       toast.success('Peça atualizada!'); setEditPeca(null); loadData();
@@ -181,7 +181,23 @@ export default function Estoque() {
               <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Compatibilidade</label><input value={eCompat} onChange={e => setECompat(e.target.value)} className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               <div className="grid grid-cols-3 gap-3">
                 <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Qtd</label><input value={eQtd} onChange={e => setEQtd(e.target.value)} type="number" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-                <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Preço</label><input value={ePreco} onChange={e => setEPreco(e.target.value)} type="number" step="0.01" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
+                <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Preço</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium">R$</span>
+                  <input
+                    value={ePreco}
+                    onChange={e => setEPreco(e.target.value.replace(/[^0-9.,]/g, ''))}
+                    onBlur={e => {
+                      const num = parseFloat(e.target.value.replace(',', '.')) || 0;
+                      if (num > 0) setEPreco(num.toFixed(2).replace('.', ','));
+                    }}
+                    placeholder="0,00"
+                    inputMode="decimal"
+                    className="w-full h-11 pl-8 pr-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+              </div>
                 <div><label className="text-xs font-medium text-muted-foreground mb-1 block">Est.Mín</label><input value={eEstMin} onChange={e => setEEstMin(e.target.value)} type="number" className="w-full h-11 px-4 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
               </div>
               <button onClick={handleSave} disabled={saving} className="w-full h-11 bg-gradient-red text-primary-foreground font-bold rounded-lg active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2"><Save size={16} />{saving ? 'Salvando...' : 'Salvar'}</button>
