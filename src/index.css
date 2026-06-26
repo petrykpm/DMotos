@@ -59,10 +59,10 @@
     @apply border-border;
     box-sizing: border-box;
   }
-  html, body {
-    overflow-x: hidden;
+  html {
     width: 100%;
     max-width: 100vw;
+    overflow-y: auto;
   }
 
   body {
@@ -70,7 +70,10 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
-    overscroll-behavior: none;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   /* Mobile optimizations */

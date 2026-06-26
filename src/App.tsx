@@ -49,12 +49,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background flex overflow-x-hidden">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       {/* Conteúdo principal */}
-      <div className="flex-1 lg:ml-60 relative overflow-x-hidden w-full">
+      <div className="flex-1 lg:ml-60 relative w-full min-w-0">
         <div
-          className="w-full max-w-lg mx-auto lg:max-w-4xl lg:mx-0 lg:px-0 relative min-h-screen overflow-x-hidden"
+          className="w-full max-w-lg mx-auto lg:max-w-4xl lg:mx-0 lg:px-0 relative min-h-screen"
           style={{
             paddingTop: "env(safe-area-inset-top, 0px)",
             paddingLeft: "env(safe-area-inset-left, 0px)",
