@@ -24,6 +24,7 @@ import Busca from "./pages/Busca";
 import Motos from "./pages/Motos";
 import Categorias from "./pages/Categorias";
 import { OfflineBanner } from "@/components/shared/OfflineBanner";
+import { useAndroidBack } from "@/hooks/useAndroidBack";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,10 +71,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AndroidBackHandler() {
+  useAndroidBack();
+  return null;
+}
+
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
+    <>
+    <AndroidBackHandler />
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={<AuthGuard><AppLayout><Home /></AppLayout></AuthGuard>} />
@@ -94,6 +102,7 @@ function AppRoutes() {
       <Route path="/busca" element={<AuthGuard><AppLayout><Busca /></AppLayout></AuthGuard>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </>
   );
 }
 
