@@ -141,37 +141,41 @@ export const pecaService = {
 // ============================================================
 export const ordemService = {
   async listar() {
-    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano), profiles(nome)').order('created_at', { ascending: false });
     if (error) throwError(error, 'ordemService.listar');
     return (data || []).map((o: any) => ({
       ...o, clienteNome: o.clientes?.nome || '',
       motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
+      criadoPor: o.profiles?.nome || '',
     }));
   },
   async listarPorMoto(motoId: string) {
-    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').eq('moto_id', motoId).order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano), profiles(nome)').eq('moto_id', motoId).order('created_at', { ascending: false });
     if (error) throwError(error, 'ordemService.listarPorMoto');
     return (data || []).map((o: any) => ({
       ...o, clienteNome: o.clientes?.nome || '',
       motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
+      criadoPor: o.profiles?.nome || '',
     }));
   },
   async listarPorCliente(clienteId: string) {
-    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').eq('cliente_id', clienteId).order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano), profiles(nome)').eq('cliente_id', clienteId).order('created_at', { ascending: false });
     if (error) throwError(error, 'ordemService.listarPorCliente');
     return (data || []).map((o: any) => ({
       ...o, clienteNome: o.clientes?.nome || '',
       motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '',
+      criadoPor: o.profiles?.nome || '',
     }));
   },
   async buscar(id: string) {
-    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome, telefone), motos(marca, modelo, ano, placa), ordem_itens(*, pecas(nome))').eq('id', id).single();
+    const { data, error } = await supabase.from('ordens_servico').select('*, clientes(nome, telefone), motos(marca, modelo, ano, placa), ordem_itens(*, pecas(nome)), profiles(nome)').eq('id', id).single();
     if (error) throwError(error, 'ordemService.buscar');
     return {
       ...data, clienteNome: (data as any).clientes?.nome || '',
       clienteTelefone: (data as any).clientes?.telefone || '',
       motoDescricao: (data as any).motos ? `${(data as any).motos.marca} ${(data as any).motos.modelo} ${(data as any).motos.ano || ''}`.trim() : '',
       motoPlaca: (data as any).motos?.placa || '',
+      criadoPor: (data as any).profiles?.nome || '',
       itens: ((data as any).ordem_itens || []).map((item: any) => ({ ...item, pecaNome: item.pecas?.nome || '', subtotal: Number(item.preco_unitario || 0) * Number(item.quantidade || 0) })),
     };
   },
@@ -264,7 +268,7 @@ export const dashboardService = {
     const [clientesRes, pecasRes, ordensRes] = await Promise.all([
       supabase.from('clientes').select('id', { count: 'exact', head: true }),
       supabase.from('pecas').select('*'),
-      supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano)').order('created_at', { ascending: false }).limit(10),
+      supabase.from('ordens_servico').select('*, clientes(nome), motos(marca, modelo, ano), profiles(nome)').order('created_at', { ascending: false }).limit(10),
     ]);
     const pecas = pecasRes.data || [];
     const ordens = (ordensRes.data || []).map((o: any) => ({ ...o, clienteNome: o.clientes?.nome || '', motoDescricao: o.motos ? `${o.motos.marca} ${o.motos.modelo} ${o.motos.ano || ''}`.trim() : '' }));

@@ -252,6 +252,7 @@ export default function ClienteDetalhe() {
                     <StatusBadge status={o.status} />
                   </div>
                   <p className="text-xs text-muted-foreground">{o.motoDescricao}</p>
+                  {o.criadoPor && <p className="text-[10px] text-primary/70">por {o.criadoPor}</p>}
                 </div>
               </button>
             ))}

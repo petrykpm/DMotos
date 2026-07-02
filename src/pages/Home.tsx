@@ -145,6 +145,7 @@ export default function Home() {
                     </div>
                     <p className="text-sm font-semibold text-foreground truncate">{ordem.clienteNome}</p>
                     <p className="text-xs text-muted-foreground truncate">{ordem.motoDescricao}</p>
+                  {ordem.criadoPor && <p className="text-[10px] text-primary/70">por {ordem.criadoPor}</p>}
                   </div>
                   <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                     <span className="text-sm font-bold text-foreground">R$ {Number(ordem.valor_total).toFixed(2)}</span>
