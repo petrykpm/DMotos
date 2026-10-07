@@ -128,13 +128,20 @@ export const pecaService = {
     if (error) throwError(error, 'pecaService.deletarForce');
   },
   async entradaEstoque(pecaId: string, quantidade: number) {
-    const { data: peca, error: fetchErr } = await supabase.from('pecas').select('quantidade').eq('id', pecaId).single();
-    if (fetchErr) throwError(fetchErr, 'pecaService.entradaEstoque.fetch');
-    const { data, error } = await supabase.from('pecas').update({ quantidade: (peca?.quantidade || 0) + quantidade, updated_at: new Date().toISOString() }).eq('id', pecaId).select().single();
-    if (error) throwError(error, 'pecaService.entradaEstoque.update');
+    await ajustarEstoque(pecaId, quantidade);
+    const { data, error } = await supabase.from('pecas').select('*').eq('id', pecaId).single();
+    if (error) throwError(error, 'pecaService.entradaEstoque.fetch');
     return data;
   },
 };
+
+// Ajuste atômico de estoque via funções do banco (evita condição de corrida)
+async function ajustarEstoque(pecaId: string, delta: number) {
+  if (delta === 0) return;
+  const fn = delta > 0 ? 'incrementar_estoque' : 'decrementar_estoque';
+  const { error } = await supabase.rpc(fn, { p_peca_id: pecaId, p_quantidade: Math.abs(delta) });
+  if (error) throw new Error(error.message);
+}
 
 // ============================================================
 // ORDENS DE SERVIÇO
@@ -203,7 +210,7 @@ export const ordemService = {
       const itensData = form.itens.map(i => ({ ordem_id: ordem.id, peca_id: i.peca_id, quantidade: i.quantidade, preco_unitario: i.preco_unitario, subtotal: i.preco_unitario * i.quantidade }));
       await supabase.from('ordem_itens').insert(itensData);
       for (const item of form.itens) {
-        try { const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single(); if (peca) await supabase.from('pecas').update({ quantidade: peca.quantidade - item.quantidade, updated_at: new Date().toISOString() }).eq('id', item.peca_id); } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
+        try { await ajustarEstoque(item.peca_id, -item.quantidade); } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
       }
     }
     return ordem;
@@ -226,10 +233,7 @@ export const ordemService = {
 
     // 2. Restaura estoque dos itens antigos
     for (const old of itensAtuais || []) {
-      try {
-        const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', old.peca_id).single();
-        if (peca) await supabase.from('pecas').update({ quantidade: peca.quantidade + old.quantidade, updated_at: new Date().toISOString() }).eq('id', old.peca_id);
-      } catch (e) { console.warn('[estoque] Falha ao restaurar quantidade:', e); }
+      try { await ajustarEstoque(old.peca_id, old.quantidade); } catch (e) { console.warn('[estoque] Falha ao restaurar quantidade:', e); }
     }
 
     // 3. Remove itens antigos da OS
@@ -242,10 +246,7 @@ export const ordemService = {
       const { error: insErr } = await supabase.from('ordem_itens').insert(rows);
       if (insErr) throwError(insErr, 'ordemService.atualizarItens.insert');
       for (const item of itens) {
-        try {
-          const { data: peca } = await supabase.from('pecas').select('quantidade').eq('id', item.peca_id).single();
-          if (peca) await supabase.from('pecas').update({ quantidade: Math.max(0, peca.quantidade - item.quantidade), updated_at: new Date().toISOString() }).eq('id', item.peca_id);
-        } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
+        try { await ajustarEstoque(item.peca_id, -item.quantidade); } catch (e) { console.warn('[estoque] Falha ao descontar quantidade:', e); }
       }
     }
 
@@ -399,18 +400,22 @@ export const fotoService = {
     const path = `${user_id}/${ordemId}/${tipo}_${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from('os-fotos').upload(path, file, { upsert: true });
     if (error) throwError(error, 'fotoService.upload');
-    const { data } = supabase.storage.from('os-fotos').getPublicUrl(path);
-    return data.publicUrl;
+    // Bucket é privado: devolve URL assinada (1h) em vez de URL pública
+    const { data } = await supabase.storage.from('os-fotos').createSignedUrl(path, 3600);
+    return data?.signedUrl || path;
   },
   async listar(ordemId: string): Promise<{ url: string; tipo: string; path: string }[]> {
     const user_id = await getUserId();
     const { data, error } = await supabase.storage.from('os-fotos').list(`${user_id}/${ordemId}`);
-    if (error) return [];
-    return (data || []).map(f => ({
-      path: `${user_id}/${ordemId}/${f.name}`,
-      url: supabase.storage.from('os-fotos').getPublicUrl(`${user_id}/${ordemId}/${f.name}`).data.publicUrl,
+    if (error || !data || data.length === 0) return [];
+    const paths = data.map(f => `${user_id}/${ordemId}/${f.name}`);
+    // Bucket é privado: gera URLs assinadas (1h)
+    const { data: signed } = await supabase.storage.from('os-fotos').createSignedUrls(paths, 3600);
+    return data.map((f, i) => ({
+      path: paths[i],
+      url: signed?.[i]?.signedUrl || '',
       tipo: f.name.startsWith('problema') ? 'problema' : 'servico',
-    }));
+    })).filter(f => f.url);
   },
   async deletar(path: string): Promise<void> {
     const { error } = await supabase.storage.from('os-fotos').remove([path]);
